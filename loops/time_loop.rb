@@ -4,7 +4,7 @@
 #
 class TimeLoop < Loops::Base
   def run
-    EM.add_periodic_timer(1) do
+    with_period_of(1) do
       log(Time.now)
       sleep(5)
     end
