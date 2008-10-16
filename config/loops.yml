@@ -7,7 +7,8 @@ seo_loop:
   workers_number: 2
 
 time_loop:
-  a: b
+  type: simple
   
+# This loop has no class file so it should not be started
 not_a_loop:
-  crap: true
+  type: simple

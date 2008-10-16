@@ -6,5 +6,3 @@ class SeoLoop < Loops::Base
     end
   end
 end
-
-dsfsdf
