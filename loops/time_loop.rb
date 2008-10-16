@@ -4,9 +4,8 @@
 #
 class TimeLoop < Loops::Base
   def run
-    loop do
+    EM.add_periodic_timer(1) do
       puts "#{name}(#{Process.pid}): #{Time.now.to_s}"
-      sleep(1)
     end
   end
 end

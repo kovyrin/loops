@@ -2,12 +2,13 @@
 
 require 'rubygems'
 require 'yaml'
-require 'mq'
+require 'eventmachine'
 
 LOOPS_ROOT = File.dirname(__FILE__) + "/.."
 LOOPS_CONFIG_FILE = LOOPS_ROOT + "/config/loops.yml"
 
 $:.unshift(LOOPS_ROOT + '/lib')
+require 'ext/em'
 require 'loops'
 
 puts "Loading config..."

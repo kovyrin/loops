@@ -1,5 +1,6 @@
 seo_loop:
   type: queue
+  disabled: true
   workers_number: 2
   poll_period: 1
 
@@ -10,7 +11,6 @@ seo_loop:
 
 time_loop:
   type: simple
-  disabled: true
   
 # This loop has no class file so it should not be started
 not_a_loop:
