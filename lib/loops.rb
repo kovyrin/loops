@@ -10,6 +10,7 @@ class Loops
   def self.start_loops!
     @@running_loops = []
     @@config.each do |name, config|
+      next if config['disabled']
       klass = load_loop_class(name)
       next unless klass
 
@@ -81,3 +82,4 @@ private
 end
 
 require 'loops/base'
+require 'loops/queue'

@@ -1,13 +1,16 @@
 seo_loop:
-  type: amqp
-  amqp_server: 127.0.0.1
-  amqp_user: scribd
-  amqp_password: scribd
-  amqp_vhost: /scribd/loops
+  type: queue
   workers_number: 2
+  poll_period: 1
+
+  server: 127.0.0.1
+  user: scribd
+  password: scribd
+  vhost: /scribd/loops
 
 time_loop:
   type: simple
+  disabled: true
   
 # This loop has no class file so it should not be started
 not_a_loop:

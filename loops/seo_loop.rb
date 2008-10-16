@@ -1,8 +1,5 @@
-class SeoLoop < Loops::Base
-  def run
-    loop do
-      puts "#{name}(#{Process.pid}): #{Time.now.to_s}"
-      sleep(1)
-    end
+class SeoLoop < Loops::Queue
+  def process_message(message)
+    puts "Received a message: #{message.inspect}"
   end
 end

@@ -26,18 +26,18 @@ ch.basic_publish(:content => content, :exchange => 'seo-loop-docs')
 EM.run do
   amq = MQ.direct('seo-loop-docs-exchange', :durable => true)
   
-  100.times { |i| amq.publish('!!!! ping %d' % [i], :persistent => true) }
+  1.times { |i| amq.publish('!!!! ping %d' % [i], :persistent => true) }
   AMQP.stop { EM.stop }
 end
 =end
 
 
-QUEUE_NAME = "test1"
+QUEUE_NAME = "loops_queue_seo_loop"
 
 EM.run do
   amq = MQ.queue(QUEUE_NAME, :durable => true)
   
-  100.times { |i| 
+  100000.times { |i| 
     amq.publish('Fucking Ping %d!' % [i], :persistent => true)
   }
 
