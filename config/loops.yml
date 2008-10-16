@@ -1,0 +1,13 @@
+seo_loop:
+  type: amqp
+  amqp_server: 127.0.0.1
+  amqp_user: scribd
+  amqp_password: scribd
+  amqp_vhost: /scribd/loops
+  workers_number: 2
+
+time_loop:
+  a: b
+  
+not_a_loop:
+  crap: true
