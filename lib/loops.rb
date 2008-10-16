@@ -64,7 +64,12 @@ private
       looop.config = config
       
       puts "Starting the loop #{name}!"
-      looop.run
+      begin
+        looop.run
+      rescue Exception => e
+        puts "Exception in the loop #{name}: #{e} at #{e.backtrace.first}"
+        sleep(5)
+      end
     end
   end
 

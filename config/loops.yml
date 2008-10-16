@@ -1,14 +1,14 @@
-seo_loop:
+# STOMP queue server polling loop
+queue_loop:
   type: queue
-  disabled: true
-  workers_number: 2
-  poll_period: 1
+  workers_number: 10
 
-  server: 127.0.0.1
-  user: scribd
-  password: scribd
-  vhost: /scribd/loops
+  url: 127.0.0.1
+  port: 61613
+#  user: guest
+#  password: guest
 
+# Simple loop
 time_loop:
   type: simple
   

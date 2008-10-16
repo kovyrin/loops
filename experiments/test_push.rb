@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'mq'
-#require 'stomp'
+#require 'mq'
+require 'stomp'
 
 =begin
 $:.unshift File.dirname(__FILE__) + '/lib/qpid'
@@ -31,7 +31,7 @@ EM.run do
 end
 =end
 
-
+=begin
 QUEUE_NAME = "loops_queue_seo_loop"
 
 EM.run do
@@ -43,7 +43,7 @@ EM.run do
 
   AMQP.stop { EM.stop }
 end
-
+=end
 
 =begin
 EM.run {
@@ -57,13 +57,11 @@ EM.run {
 }
 =end
 
-=begin
 client = Stomp::Client.open "stomp://localhost:61613"
 
-100.times do |i|
-  client.send('/queue/scribd/seo-loop', "hello #{i}", :persistent => true)
+100000.times do |i|
+  client.send('/queue/loops/queue_loop', "hello world #{i}", :persistent => true)
 end
 
 client.close
-=end
 
