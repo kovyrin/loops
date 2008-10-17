@@ -81,6 +81,7 @@ private
       
       debug "Starting the loop #{name}!"
       begin
+        fix_ar_after_fork
         looop.run
       rescue Exception => e
         error "Exception in the loop #{name}: #{e} at #{e.backtrace.first}"
@@ -120,6 +121,12 @@ private
       warn "Received an INT signal... stopping..."
       EM.stop 
     }    
+  end
+  
+  def self.fix_ar_after_fork
+    ActiveRecord::Base.allow_concurrency = true
+    ActiveRecord::Base.clear_active_connections!
+    ActiveRecord::Base.verify_active_connections!
   end
 end
 
