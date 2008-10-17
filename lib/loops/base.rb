@@ -4,6 +4,9 @@ class Loops::Base
   def initialize(logger)
     self.logger = logger
   end
+
+  # has no dependencies yet
+  def self.check_dependencies; end
   
   # Proxy logger calls to our logger
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|

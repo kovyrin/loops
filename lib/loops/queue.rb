@@ -1,7 +1,16 @@
-require 'stomp'
+begin
+  require 'stomp' 
+rescue LoadError
+  puts "Can't load stomp gem - all queue loops will be disabled!"
+end
+
 require 'timeout'
 
 class Loops::Queue < Loops::Base
+  def self.check_dependencies
+    raise "No stomp gem installed!" unless defined?(Stomp::Client)
+  end
+    
   def run
     create_client
     

@@ -58,6 +58,13 @@ private
       return false
     end
 
+    begin
+      klass.check_dependencies
+    rescue Exception => e
+      error "Loop #{name} dependencies check failed: #{e} at #{e.backtrace.first}"
+      return false
+    end
+
     return klass
   end
   
