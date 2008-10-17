@@ -46,5 +46,3 @@ if EM::VERSION < '0.12.1'
   end
 
 end
-
-require 'ext/emfork'

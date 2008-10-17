@@ -1,8 +1,8 @@
 class QueueLoop < Loops::Queue
   def process_message(message)
-    log "Received a message: #{message.body}"
-    log "sleeping..."
+    debug "Received a message: #{message.body}"
+    debug "sleeping..."
     sleep(0.5 + rand(10) / 10.0)
-    log "done..."
+    debug "done..."
   end
 end

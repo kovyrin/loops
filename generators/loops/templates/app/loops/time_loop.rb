@@ -5,7 +5,7 @@
 class TimeLoop < Loops::Base
   def run
     with_period_of(1) do
-      log(Time.now)
+      debug(Time.now)
       sleep(5)
     end
   end

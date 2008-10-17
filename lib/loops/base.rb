@@ -10,8 +10,8 @@ class Loops::Base
   # Proxy logger calls to our logger
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL
-      def #{meth_name}(*keys)
-        logger.#{meth_name}("loop[#{name}/#{Process.pid}]: #{keys.join(' ')}")
+      def #{meth_name}(message)
+        logger.#{meth_name}("loop[\#{name}/\#{Process.pid}]: \#{message}")
       end
     EVAL
   end

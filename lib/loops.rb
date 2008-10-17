@@ -34,8 +34,8 @@ private
   # Proxy logger calls to the default Rails logger
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL
-      def self.#{meth_name}(*keys)
-        Rails.logger.info "loops[RUNNER/#{Process.pid}]: #{keys.join(' ')}"
+      def self.#{meth_name}(message)
+        Rails.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
       end
     EVAL
   end
@@ -94,5 +94,5 @@ private
   end
 end
 
-require 'loops/loops/base'
-require 'loops/loops/queue'
+require 'loops/base'
+require 'loops/queue'
