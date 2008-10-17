@@ -50,7 +50,7 @@ private
       return false
     end
     
-    klass_name = name.camelize
+    klass_name = name.classify
     klass = klass_name.constantize rescue nil
     
     unless klass
