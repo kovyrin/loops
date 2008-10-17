@@ -1,5 +1,3 @@
-require 'rubygems'
-require 'mq'
 require 'yaml'
 
 class Loops
@@ -86,5 +84,5 @@ private
   end
 end
 
-require 'loops/base'
-require 'loops/queue'
+require 'loops/loops/base'
+require 'loops/loops/queue'
