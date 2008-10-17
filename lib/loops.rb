@@ -42,10 +42,10 @@ private
       return false
     end
     
-    klass_name = name.split('_').collect { |word| word.capitalize }.join # name.camelize
-    begin
-      klass = eval("#{klass_name}")
-    rescue NameError
+    klass_name = name.camelize
+    klass = klass_name.constantize
+    
+    unless klass
       puts "Can't find class: #{klass_name}. Worker #{name} won't be started!"
       return false
     end

@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'yaml'
 require 'eventmachine'
+require 'activesupport'
 
 LOOPS_ROOT = File.dirname(__FILE__) + "/.."
 LOOPS_CONFIG_FILE = LOOPS_ROOT + "/config/loops.yml"
