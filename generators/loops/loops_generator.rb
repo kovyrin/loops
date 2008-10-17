@@ -6,7 +6,7 @@ class LoopsGenerator < Rails::Generator::Base
       m.directory 'app'
       m.directory 'app/loops'
       m.file      'app/loops/APP_README',     'app/loops/README'
-      m.file      'app/loops/time_loop.rb',   'app/loops/simple_loop.rb'
+      m.file      'app/loops/simple_loop.rb', 'app/loops/simple_loop.rb'
       m.file      'app/loops/queue_loop.rb',  'app/loops/queue_loop.rb'
       
       # Generate script/loops file

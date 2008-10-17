@@ -59,7 +59,7 @@ EM.run {
 
 client = Stomp::Client.open "stomp://localhost:61613"
 
-100000.times do |i|
+10.times do |i|
   client.send('/queue/loops/queue_loop', "hello world #{i}", :persistent => true)
 end
 

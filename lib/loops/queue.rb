@@ -7,7 +7,7 @@ class Loops::Queue < Loops::Base
     
     config['queue_name'] ||= "/queue/loops/#{name}"
     config['prefetch_size'] ||= 1
-    log "Subscribing for the queue #{config['queue_name']}..."
+    debug "Subscribing for the queue #{config['queue_name']}..."
     
     headers = { :ack => :client }
     headers["activemq.prefetchSize"] = config['prefetch_size'] if config['prefetch_size']
@@ -28,8 +28,8 @@ class Loops::Queue < Loops::Base
           exit(0)
         end
       rescue Exception => e
-        log "Exception from process message! We won't be ACKing the message."
-        log "Details: #{e} at #{e.backtrace.first}"
+        error "Exception from process message! We won't be ACKing the message."
+        error "Details: #{e} at #{e.backtrace.first}"
         disconnect_client
         exit(0)
       end
@@ -37,7 +37,7 @@ class Loops::Queue < Loops::Base
     
     @client.join
   rescue Exception => e
-    log "Closing queue connection because of exception: #{e} at #{e.backtrace.first}"
+    error "Closing queue connection because of exception: #{e} at #{e.backtrace.first}"
     disconnect_client
     exit(0)
   end
@@ -57,7 +57,7 @@ private
   end
   
   def disconnect_client
-    log "Unsubscribing..."
+    debug "Unsubscribing..."
     @client.unsubscribe(name)
     @client.close()
   end

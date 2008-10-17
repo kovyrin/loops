@@ -1,8 +1,10 @@
 require 'yaml'
+require 'pp'
 
 class Loops  
   def self.load_config(file)
     @@config = YAML.load_file(file)
+    pp @@config
   end
   
   def self.start_loops!
@@ -42,7 +44,7 @@ private
 
   def self.load_loop_class(name)
     begin
-      klass_file = LOOPS_ROOT + "/loops/#{name}.rb" 
+      klass_file = LOOPS_ROOT + "/app/loops/#{name}.rb" 
       debug "Loading class file: #{klass_file}"
       require(klass_file)
     rescue Exception
@@ -62,6 +64,7 @@ private
   end
   
   def self.start_loop(name, klass, config)
+    puts "Starting loop: #{name}"
     info "Starting loop: #{name}"
     info " - config: #{config.inspect}"
     
