@@ -94,6 +94,15 @@ private
     
     config['logger'] = Rails.root + "/" + config['logger'] unless config['logger'] =~ /^\//
     Logger.new(config['logger'])
+
+  rescue Exception => e
+    message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
+    puts "ERROR: #{message}"
+
+    message << "\nException: #{e} at #{e.backtrace.first}"
+    error(message)
+
+    return Rails.logger
   end
 
   def self.setup_signals
