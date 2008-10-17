@@ -7,13 +7,16 @@
 simple_loop:
   type: simple
   workers_number: 1
-  disabled: true
+  logger: default
 
 # An example of a STOMP queue-based loop
 queue_loop:
   type: queue
   workers_number: 2
-
+  logger: log/loops/queue.log
+#  logger_rotate: daily       # TODO
+#  logger_max_size: 10000000  # TODO
+  
   host: 127.0.0.1
   port: 61613
 

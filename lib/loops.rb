@@ -70,7 +70,7 @@ private
     
     EM.fork(config['workers_number'] || 1) do
       debug "Instantiating class: #{klass}"
-      looop = klass.new(Rails.logger)
+      looop = klass.new(create_logger(name, config))
       looop.name = name
       looop.config = config
       
@@ -82,6 +82,18 @@ private
         sleep(5)
       end
     end
+  end
+
+  # TODO: Need to add logs rotation parameters
+  def self.create_logger(loop_name, config)
+    config['logger'] ||= 'default'
+
+    return Rails.logger if config['logger'] == 'default'
+    return Logger.new(STDOUT) if config['logger'] == 'stdout'
+    return Logger.new(STDERR) if config['logger'] == 'stderr'
+    
+    config['logger'] = Rails.root + "/" + config['logger'] unless config['logger'] =~ /^\//
+    Logger.new(config['logger'])
   end
 
   def self.setup_signals
