@@ -50,7 +50,7 @@ private
       return false
     end
     
-    klass_name = name.classify
+    klass_name = "#{name}_loop".classify
     klass = klass_name.constantize rescue nil
     
     unless klass

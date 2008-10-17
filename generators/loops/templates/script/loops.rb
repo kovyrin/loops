@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require File.dirname(__FILE__) + '/../config/boot'
-require Rails.root + '/config/environment'
+require File.dirname(__FILE__) + '/../config/environment'
 
 $LOAD_PATH.unshift("vendor/plugins/loops/lib")
 
