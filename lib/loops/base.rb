@@ -1,9 +1,19 @@
 class Loops::Base
   attr_accessor :name
   attr_accessor :config
+  attr_accessor :logger
   
-  def log(*keys)
-    Rails.logger.info "loop[#{name}/#{Process.pid}]: #{keys.join(' ')}"
+  def initialize(logger)
+    self.logger = logger
+  end
+  
+  # Proxy logger calls to our logger
+  [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
+    class_eval <<-EVAL
+      def #{meth_name}(*keys)
+        logger.#{meth_name}("loop[#{name}/#{Process.pid}]: #{keys.join(' ')}")
+      end
+    EVAL
   end
   
   def with_period_of(seconds)

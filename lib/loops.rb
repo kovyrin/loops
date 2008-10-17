@@ -1,6 +1,6 @@
 require 'yaml'
 
-class Loops
+class Loops  
   def self.load_config(file)
     @@config = YAML.load_file(file)
   end
@@ -17,26 +17,36 @@ class Loops
     end
     
     if @@running_loops.empty?
-      puts "No loops to run!"
+      puts "WARNING: No loops to run! Exiting..."
       return
     end
     
     EM.run do
-      puts "Ok. Now we're running the loops #{@@running_loops.inspect}!"
+      info "Ok. Now we're running the loops #{@@running_loops.inspect}!"
       setup_signals
     end
-    puts "Loops are stopped now!"
+
+    info "Loops are stopped now!"
   end
 
 private
-  
+
+  # Proxy logger calls to the default Rails logger
+  [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
+    class_eval <<-EVAL
+      def self.#{meth_name}(*keys)
+        Rails.logger.info "loops[RUNNER/#{Process.pid}]: #{keys.join(' ')}"
+      end
+    EVAL
+  end
+
   def self.load_loop_class(name)
     begin
       klass_file = LOOPS_ROOT + "/loops/#{name}.rb" 
-      puts "Loading class file: #{klass_file}"
+      debug "Loading class file: #{klass_file}"
       require(klass_file)
     rescue Exception
-      puts "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
+      error "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
       return false
     end
     
@@ -44,7 +54,7 @@ private
     klass = klass_name.constantize
     
     unless klass
-      puts "Can't find class: #{klass_name}. Worker #{name} won't be started!"
+      error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
       return false
     end
 
@@ -52,20 +62,20 @@ private
   end
   
   def self.start_loop(name, klass, config)
-    puts "Starting loop: #{name}"
-    puts " - config: #{config.inspect}"
+    info "Starting loop: #{name}"
+    info " - config: #{config.inspect}"
     
     EM.fork(config['workers_number'] || 1) do
-      puts "Instantiating class: #{klass}"
-      looop = klass.new
+      debug "Instantiating class: #{klass}"
+      looop = klass.new(Rails.logger)
       looop.name = name
       looop.config = config
       
-      puts "Starting the loop #{name}!"
+      debug "Starting the loop #{name}!"
       begin
         looop.run
       rescue Exception => e
-        puts "Exception in the loop #{name}: #{e} at #{e.backtrace.first}"
+        error "Exception in the loop #{name}: #{e} at #{e.backtrace.first}"
         sleep(5)
       end
     end
@@ -73,12 +83,12 @@ private
 
   def self.setup_signals
     Signal.trap('INT') { 
-      puts "Received an INT signal... stopping..."
+      warn "Received an INT signal... stopping..."
       EM.stop 
     }
 
     Signal.trap('TERM') { 
-      puts "Received an INT signal... stopping..."
+      warn "Received an INT signal... stopping..."
       EM.stop 
     }    
   end
