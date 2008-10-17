@@ -53,7 +53,7 @@ private
     end
     
     klass_name = name.camelize
-    klass = klass_name.constantize
+    klass = klass_name.constantize rescue nil
     
     unless klass
       error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
