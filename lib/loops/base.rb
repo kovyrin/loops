@@ -3,7 +3,7 @@ class Loops::Base
   attr_accessor :config
   
   def log(*keys)
-    puts "#{Time.now} [#{name}/#{Process.pid}]: #{keys.join(' ')}"
+    Rails.logger.info "loop[#{name}/#{Process.pid}]: #{keys.join(' ')}"
   end
   
   def with_period_of(seconds)
