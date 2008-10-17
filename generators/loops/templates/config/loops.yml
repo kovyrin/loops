@@ -4,13 +4,13 @@
 # Each loop should have a file in app/loops directory with the same name as its config record.
 
 # Simple time printing loop
-simple_loop:
+simple:
   type: simple
   workers_number: 1
   logger: default
 
 # An example of a STOMP queue-based loop
-queue_loop:
+queue:
   type: queue
   workers_number: 2
   logger: log/loops/queue.log
@@ -21,5 +21,5 @@ queue_loop:
   port: 61613
 
 # This loop has no loop class file so it should not be started
-not_a_loop:
+not_exists:
   type: simple

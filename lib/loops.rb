@@ -42,7 +42,7 @@ private
 
   def self.load_loop_class(name)
     begin
-      klass_file = LOOPS_ROOT + "/app/loops/#{name}.rb" 
+      klass_file = LOOPS_ROOT + "/app/loops/#{name}_loop.rb" 
       debug "Loading class file: #{klass_file}"
       require(klass_file)
     rescue Exception
