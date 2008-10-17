@@ -1,7 +1,6 @@
 class Loops::Base
-  attr_accessor :name
-  attr_accessor :config
-  attr_accessor :logger
+  attr_accessor :name, :config
+  attr_reader :logger
   
   def initialize(logger)
     self.logger = logger
