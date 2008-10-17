@@ -1,10 +1,8 @@
 require 'yaml'
-require 'pp'
 
 class Loops  
   def self.load_config(file)
     @@config = YAML.load_file(file)
-    pp @@config
   end
   
   def self.start_loops!
