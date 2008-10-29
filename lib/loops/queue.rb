@@ -33,22 +33,19 @@ class Loops::Queue < Loops::Base
         @client.acknowledge(msg)
         @total_served += 1
         if config['max_requests'] && @total_served >= config['max_requests'].to_i
-          disconnect_client
-          exit(0)
+          disconnect_client_and_exit
         end
       rescue Exception => e
         error "Exception from process message! We won't be ACKing the message."
         error "Details: #{e} at #{e.backtrace.first}"
-        disconnect_client
-        exit(0)
+        disconnect_client_and_exit
       end
     end
     
     @client.join
   rescue Exception => e
     error "Closing queue connection because of exception: #{e} at #{e.backtrace.first}"
-    disconnect_client
-    exit(0)
+    disconnect_client_and_exit
   end
 
   def process_message(msg)
@@ -67,13 +64,14 @@ private
   
   def disconnect_client
     debug "Unsubscribing..."
-    @client.unsubscribe(name)
-    @client.close()
+    @client.unsubscribe(name) rescue nil
+    @client.close() rescue nil
+    exit(0)
   end
 
   def setup_signals
-    Signal.trap('INT') { disconnect_client }
-    Signal.trap('TERM') { disconnect_client }    
+    Signal.trap('INT') { disconnect_client_and_exit }
+    Signal.trap('TERM') { disconnect_client_and_exit }
   end
 
 end

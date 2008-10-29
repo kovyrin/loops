@@ -12,7 +12,7 @@ class Loops::Base
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL
       def #{meth_name}(message)
-        logger.#{meth_name}("loop[\#{name}/\#{Process.pid}]: \#{message}")
+        logger.#{meth_name}("\#{Time.now}: loop[\#{name}/\#{Process.pid}]: \#{message}")
       end
     EVAL
   end

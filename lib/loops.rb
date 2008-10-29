@@ -35,7 +35,7 @@ private
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL
       def self.#{meth_name}(message)
-        Rails.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
+        Rails.logger.#{meth_name} "\#{Time.now}: loops[RUNNER/\#{Process.pid}]: \#{message}"
       end
     EVAL
   end
