@@ -1,14 +1,16 @@
 require 'yaml'
 
-class Loops  
+class Loops
+  cattr_reader :config
   def self.load_config(file)
     @@config = YAML.load_file(file)
   end
   
-  def self.start_loops!
+  def self.start_loops!(loops_to_start = :all)
     @@running_loops = []
     @@config.each do |name, config|
       next if config['disabled']
+      next unless loops_to_start == :all || loops_to_start.member?(name)
       klass = load_loop_class(name)
       next unless klass
 
