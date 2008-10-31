@@ -1,5 +1,4 @@
 require 'loops/worker'
-require 'pp'
 
 class Loops::ProcessManager 
   attr_reader :logger
@@ -8,8 +7,6 @@ class Loops::ProcessManager
     @config = {
       'poll_period' => 1
     }.merge(config)
-    
-    pp @config
     
     @logger = logger
     @workers = {}
