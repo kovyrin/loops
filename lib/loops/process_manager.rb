@@ -49,6 +49,9 @@ class Loops::ProcessManager
       logger.debug("Sleeping for #{@config['poll_period']} seconds...")
       sleep(@config['poll_period'])
     end
+  rescue Interrupt
+    logger.debug("Received an interrupt while sleeping, forcefully-stopping all loops")
+    stop_workers!
   end
   
   def setup_signals
@@ -57,7 +60,22 @@ class Loops::ProcessManager
     trap('EXIT') {}
   end
   
-  def stop_workers
-    # FIXME: need to add workers shutdown code here
+  def stop_workers(force = false)
+    logger.debug("Stopping workers#{force ? '(forced)' : ''}...")
+
+    # Termination loop
+    @workers.each do |name, pool|
+      logger.debug("Stopping loop #{name} workers...")
+      pool.each do |worker|
+        next unless worker.running?(false)
+        worker.stop(force)
+      end
+    end
+  end
+  
+  def stop_workers!
+    stop_workers(false)
+    sleep(1)
+    stop_workers(true)
   end
 end

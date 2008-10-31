@@ -120,14 +120,14 @@ private
 
   def self.setup_signals
     Signal.trap('INT') { 
-      warn "Received an INT signal... stopping..."
-      @@pm.stop_workers
+      warn "Received an INT signal... forcefully-stopping..."
+      @@pm.stop_workers!
     }
 
     Signal.trap('TERM') { 
-      warn "Received an INT signal... stopping..."
+      warn "Received a TERM signal... stopping..."
       @@pm.stop_workers
-    }    
+    }
   end
   
   def self.fix_ar_after_fork
