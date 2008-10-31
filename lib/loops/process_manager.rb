@@ -39,4 +39,8 @@ class Loops::ProcessManager
       sleep(config['loop_period'])
     end
   end
+  
+  def stop_workers
+    # FIXME: need to add workers shutdown code here
+  end
 end
