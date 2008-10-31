@@ -1,25 +1,33 @@
 # This file is a configuration file for loops rails plugin
 #
-# Each record in this file represents one loop which could be ran using loops plugin.
+
+# This section is used to control loops manager
+global:
+  logger: stdout
+  poll_period: 5
+
+# Each record in this section represents one loop which could be ran using loops plugin.
 # Each loop should have a file in app/loops directory with the same name as its config record.
+loops:
 
-# Simple time printing loop
-simple:
-  type: simple
-  workers_number: 1
-  logger: default
+  # Simple time printing loop
+  simple:
+    type: simple
+    workers_number: 1
+    logger: default
 
-# An example of a STOMP queue-based loop
-queue:
-  type: queue
-  workers_number: 2
-  logger: log/loops/queue.log
-#  logger_rotate: daily       # TODO
-#  logger_max_size: 10000000  # TODO
+  # An example of a STOMP queue-based loop
+  queue:
+    type: queue
+    workers_number: 2
+    logger: log/loops/queue.log
+    # logger_rotate: daily       # TODO
+    # logger_max_size: 10000000  # TODO
   
-  host: 127.0.0.1
-  port: 61613
+    host: 127.0.0.1
+    port: 61613
+    disabled: true
 
-# This loop has no loop class file so it should not be started
-not_exists:
-  type: simple
+  # This loop has no loop class file so it should not be started
+  non_existent:
+    type: simple

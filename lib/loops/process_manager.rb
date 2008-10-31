@@ -1,10 +1,16 @@
 require 'loops/worker'
+require 'pp'
 
 class Loops::ProcessManager 
   attr_reader :logger
   
   def initialize(config, logger)
-    @config = config
+    @config = {
+      'poll_period' => 1
+    }.merge(config)
+    
+    pp @config
+    
     @logger = logger
     @workers = {}
   end
@@ -31,14 +37,17 @@ class Loops::ProcessManager
     loop do
       logger.debug('Checking workers\' health...')
     
-      @workers.each do |worker|
-        next if worker.running?
-        logger.debug("Worker #{worker.name} is not running. Restart!")
-        worker.run
+      @workers.each do |name, pool|
+        logger.debug("Checking loop #{name} workers...")
+        pool.each do |worker|
+          next if worker.running?
+          logger.debug("Worker #{worker.name} is not running. Restart!")
+          worker.run
+        end
       end
 
-      logger.debug("Sleeping for #{config['poll_period']} seconds...")
-      sleep(config['loop_period'])
+      logger.debug("Sleeping for #{@config['poll_period']} seconds...")
+      sleep(@config['poll_period'])
     end
   end
   

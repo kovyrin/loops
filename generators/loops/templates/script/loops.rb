@@ -9,8 +9,6 @@ $LOAD_PATH.unshift("vendor/plugins/loops/lib")
 LOOPS_ROOT = Rails.root
 LOOPS_CONFIG_FILE = LOOPS_ROOT + "/config/loops.yml"
 
-require 'ext/em'
-require 'ext/emfork'
 require 'loops'
 
 options = { :daemonize => false, :loops => [], :all_loops => false, :list_loops => false }
@@ -38,7 +36,7 @@ Loops.load_config(LOOPS_CONFIG_FILE)
 # List loops if requested
 if options[:list_loops]
   puts "Available loops:"
-  Loops.config.each do |name, config|
+  Loops.loops_config.each do |name, config|
     puts "Loop: #{name}" + (config['disabled'] ? ' (disabled)' : '')
     config.each do |k,v|
       puts " - #{k}: #{v}"

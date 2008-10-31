@@ -11,12 +11,12 @@ class Loops
     @@global_config = @@config['global']
     @@loops_config = @@config['loops']
     
-    @@logger = Rails.logger # FIXME: need to make it configurable
+    @@logger = create_logger('global', global_config)
   end
   
   def self.start_loops!(loops_to_start = :all)
     @@running_loops = []
-    @@pm = Loops::ProcessManager.new(config, @@logger)
+    @@pm = Loops::ProcessManager.new(global_config, @@logger)
     
     # Start all loops
     loops_config.each do |name, config|

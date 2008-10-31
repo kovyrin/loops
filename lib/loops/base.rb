@@ -37,8 +37,9 @@ class Loops::Base
 
   def with_period_of(seconds)
     raise "No block given!" unless block_given?
-    EM.add_periodic_timer(seconds) do
+    loop do
       yield
+      sleep(seconds)
     end
   end
 end
