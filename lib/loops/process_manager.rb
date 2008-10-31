@@ -25,6 +25,8 @@ class Loops::ProcessManager
   end
   
   def monitor_workers
+    setup_signals
+    
     logger.debug('Starting workers monitoring code...')
     loop do
       logger.debug('Checking workers\' health...')
@@ -38,6 +40,12 @@ class Loops::ProcessManager
       logger.debug("Sleeping for #{config['poll_period']} seconds...")
       sleep(config['loop_period'])
     end
+  end
+  
+  def setup_signals
+    # Zombie rippers
+    trap('CHLD') {}
+    trap('EXIT') {}
   end
   
   def stop_workers

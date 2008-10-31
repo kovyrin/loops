@@ -5,14 +5,18 @@ class Worker
     raise "Need a worker block!" unless block_given?
     @name = name
     @logger = logger
+    
+    @pid = nil
+    @ppid = $$
+    
     worker_block = &blk
   end
   
   def run
-    # FIXME: Add worker running code here
+    @pid = Kernel.fork(&blk)
   end
   
   def running?
-    # FIXME: Add worker health checks here
+    Process.kill(0, @pid) == 0
   end
 end
