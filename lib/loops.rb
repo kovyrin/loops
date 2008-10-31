@@ -1,14 +1,20 @@
 require 'yaml'
+require 'loops/process_manager'
 
 class Loops
   cattr_reader :config
+  cattr_reader :loops_config
   def self.load_config(file)
     @@config = YAML.load_file(file)
+    @@loops_config = @@config['loops']
   end
   
   def self.start_loops!(loops_to_start = :all)
     @@running_loops = []
-    @@config.each do |name, config|
+    @@pm = Loops::ProcessManager.new(config)
+    
+    # Start all loops
+    loops_config.each do |name, config|
       next if config['disabled']
       next unless loops_to_start == :all || loops_to_start.member?(name)
       klass = load_loop_class(name)
@@ -18,15 +24,14 @@ class Loops
       @@running_loops << name
     end
     
+    # Do not continue if there is nothing to run
     if @@running_loops.empty?
       puts "WARNING: No loops to run! Exiting..."
       return
     end
-    
-    EM.run do
-      info "Ok. Now we're running the loops #{@@running_loops.inspect}!"
-      setup_signals
-    end
+
+    # Start monitoring loop
+    @@pm.monitor_workers
 
     info "Loops are stopped now!"
   end
@@ -75,20 +80,15 @@ private
     info "Starting loop: #{name}"
     info " - config: #{config.inspect}"
     
-    EM.fork(config['workers_number'] || 1) do
+    @@pm.start_workers(name, config['workers_number'] || 1) do
       debug "Instantiating class: #{klass}"
       looop = klass.new(create_logger(name, config))
       looop.name = name
       looop.config = config
       
       debug "Starting the loop #{name}!"
-      begin
-        fix_ar_after_fork
-        looop.run
-      rescue Exception => e
-        error "Exception in the loop #{name}: #{e} at #{e.backtrace.first}"
-        sleep(5)
-      end
+      fix_ar_after_fork
+      looop.run
     end
   end
 
