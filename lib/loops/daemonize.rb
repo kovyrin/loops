@@ -51,8 +51,8 @@ class Loops
 
       $0 = app_name if app_name
 
-      Dir.chdir "/"   # Release old working directory
-      File.umask 0000 # Insure sensible umask
+      Dir.chdir(Rails.root) # Make sure we're in the working directory
+      File.umask(0000) # Insure sensible umask
  
 #      redirect_io
       
