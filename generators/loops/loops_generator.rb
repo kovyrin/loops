@@ -11,7 +11,7 @@ class LoopsGenerator < Rails::Generator::Base
       
       # Generate script/loops file
       m.directory 'script'
-      m.file      'script/loops.rb',          'script/loops', :chmod => 0755
+      m.file      'script/loops',             'script/loops', :chmod => 0755
       
       # Generate config/loops.yml file
       m.directory 'config'
