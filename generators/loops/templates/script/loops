@@ -6,6 +6,41 @@ require 'optparse'
 ROOT_DIR = File.dirname(File.dirname(__FILE__))
 Dir.chdir(ROOT_DIR)
 
+# Default options
+options = { 
+  :daemonize => false, 
+  :loops => [], 
+  :all_loops => false, 
+  :list_loops => false, 
+  :pid_file => nil, 
+  :stop => false ,
+  :rails_env => nil
+}
+
+# Parse command line options
+opts = OptionParser.new do |opt|
+  opt.banner = "Usage: loops [options]"
+  opt.separator ""
+  opt.separator "Specific options:"
+
+  opt.on('-d', '--daemonize', 'Daemonize when all loops started') { |v| options[:daemonize] = v }
+  opt.on('-s', '--stop', 'Stop daemonized loops if running.') { |v| options[:stop] = v }
+  opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') { |v| options[:pid_file] = v }
+  opt.on('-l', '--loop=loop_name', 'Start specified loop(s) only') { |v| options[:loops] << v }
+  opt.on('-a', '--all', 'Start all loops') { |v| options[:all_loops] = v }
+  opt.on('-L', '--list', 'Shows all available loops with their options') { |v| options[:list_loops] = v }
+  opt.on('-e', '--environment=env', 'Set RAILS_ENV value') { |v| options[:rails_env] = v }
+
+  opt.on_tail("-h", "--help", "Show this message") do
+    puts(opt)
+    exit(0)
+  end
+
+  opt.parse!(ARGV)
+end
+
+ENV['RAILS_ENV'] = options[:rails_env] if options[:rails_env]
+
 # Bootstrap rails
 require File.dirname(__FILE__) + '/../config/boot'
 require File.dirname(__FILE__) + '/../config/environment'
@@ -17,37 +52,6 @@ LOOPS_CONFIG_FILE = LOOPS_ROOT + "/config/loops.yml"
 
 require 'loops'
 require 'loops/daemonize'
-
-# Default options
-options = { 
-  :daemonize => false, 
-  :loops => [], 
-  :all_loops => false, 
-  :list_loops => false, 
-  :pid_file => nil, 
-  :stop => false 
-}
-
-# Parse command line options
-opts = OptionParser.new do |opt|
-  opt.banner = "Usage: loops [options]"
-  opt.separator ""
-  opt.separator "Specific options:"
-
-  opt.on('-d', '--daemonize', 'Daemonize when all loops started.') { |v| options[:daemonize] = v }
-  opt.on('-s', '--stop', 'Stop daemonized loops if running.') { |v| options[:stop] = v }
-  opt.on('-p', '--pid=file', 'Override loops.yml pid_file option.') { |v| options[:pid_file] = v }
-  opt.on('-l', '--loop=loop_name', 'Start specified loop(s) only') { |v| options[:loops] << v }
-  opt.on('-a', '--all', 'Start all loops') { |v| options[:all_loops] = v }
-  opt.on('-L', '--list', 'Shows all available loops with their options') { |v| options[:list_loops] = v }
-
-  opt.on_tail("-h", "--help", "Show this message") do
-    puts(opt)
-    exit(0)
-  end
-
-  opt.parse!(ARGV)
-end
 
 # Load config file
 puts "Loading config..."
