@@ -36,6 +36,7 @@ class Loops
     end
 
     # Start monitoring loop
+    setup_signals
     @@pm.monitor_workers
 
     info "Loops are stopped now!"
@@ -119,13 +120,18 @@ private
   end
 
   def self.setup_signals
-    Signal.trap('INT') { 
+    trap('TERM') { 
+      warn "Received a TERM signal... stopping..."
+      @@pm.stop_workers
+    }
+
+    trap('INT') { 
       warn "Received an INT signal... forcefully-stopping..."
       @@pm.stop_workers!
     }
 
-    Signal.trap('TERM') { 
-      warn "Received a TERM signal... stopping..."
+    trap('EXIT') { 
+      warn "Received a EXIT 'signal'... stopping..."
       @@pm.stop_workers
     }
   end
