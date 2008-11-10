@@ -1,6 +1,12 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+
+# We need this to be able to start the process w/o being in the RAILS_ROOT directory
+ROOT_DIR = File.dirname(File.dirname(__FILE__))
+Dir.chdir(ROOT_DIR)
+
+# Bootstrap rails
 require File.dirname(__FILE__) + '/../config/boot'
 require File.dirname(__FILE__) + '/../config/environment'
 
