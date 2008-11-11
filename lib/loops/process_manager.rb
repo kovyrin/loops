@@ -9,18 +9,16 @@ class Loops::ProcessManager
     }.merge(config)
     
     @logger = logger
-    @workers = {}
+    @worker_pools = {}
     @shutdown = false
   end
   
   def start_workers(name, number, &blk)
     raise "Need a worker block!" unless block_given?
-    workers = @workers[name] = []
 
-    logger.debug("Creating #{number} of #{name} workers...")
-    number.times do |id|
-      workers << start_worker(name, &blk)
-    end
+    logger.debug("Creating a workers pool of #{number} workers for #{name} loop...")
+    @worker_pools[name] = Loops::WorkerPool.new(name, logger, &blk)
+    @worker_pools[name].start_workers(number)
   end
   
   def start_worker(name, &blk)
@@ -32,25 +30,17 @@ class Loops::ProcessManager
     setup_signals
     
     logger.debug('Starting workers monitoring code...')
-    until @shutdown do
+    loop do
       logger.debug('Checking workers\' health...')
-    
-      @workers.each do |name, pool|
+      @worker_pools.each do |name, pool|
         break if @shutdown
-        logger.debug("Checking loop #{name} workers...")
-        pool.each do |worker|
-          next if worker.running? || worker.shutdown?
-          logger.debug("Worker #{worker.name} is not running. Restart!")
-          worker.run
-        end
+        pool.check_workers
       end
-
+      
+      break if @shutdown
       logger.debug("Sleeping for #{@config['poll_period']} seconds...")
-      sleep(@config['poll_period']) unless @shutdown
+      sleep(@config['poll_period']) 
     end
-  rescue Interrupt
-    logger.debug("Received an interrupt while sleeping, forcefully-stopping all loops")
-    stop_workers!
   ensure
     wait_for_workers
   end
@@ -66,14 +56,8 @@ class Loops::ProcessManager
       logger.debug("Shutting down... waiting for workers to die...")
       running_total = 0
 
-      @workers.each do |name, pool|
-        running = 0
-        pool.each do |worker|
-          next unless worker.running?(false)
-          running += 1
-          logger.debug("Worker #{name} is still running (#{worker.pid})")
-        end
-        running_total += running
+      @worker_pools.each do |name, pool|
+        running_total += pool.wait_workers
       end
 
       if running_total.zero?
@@ -87,23 +71,24 @@ class Loops::ProcessManager
   end
   
   def stop_workers(force = false)
-    return if @shutdown && !force
+    return unless start_shutdown || force
     logger.debug("Stopping workers#{force ? '(forced)' : ''}...")
-    @shutdown = true
 
     # Termination loop
-    @workers.each do |name, pool|
-      logger.debug("Stopping loop #{name} workers...")
-      pool.each do |worker|
-        next unless worker.running?(false)
-        worker.stop(force)
-      end
+    @worker_pools.each do |name, pool|
+      pool.stop_workers(force)
     end
   end
   
   def stop_workers!
+    return unless start_shutdown
     stop_workers(false)
     sleep(1)
     stop_workers(true)
+  end
+
+  def start_shutdown
+    return false if @shutdown
+    @shutdown = true
   end
 end

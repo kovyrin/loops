@@ -30,11 +30,12 @@ class Worker
     logger.error("Exception from worker: #{e} at #{e.backtrace.first}")
   end
   
-  def running?(verbose = true)
+  def running?(verbose = false)
     return false if shutdown?
     return false unless @pid
     Process.waitpid(@pid, Process::WNOHANG)
-    logger.debug("KILL(#{@pid}) = #{Process.kill(0, @pid)}")
+    res = Process.kill(0, @pid)
+    logger.debug("KILL(#{@pid}) = #{res}") if verbose
     true
   rescue Exception => e
     logger.error("Exception from kill: #{e} at #{e.backtrace.first}") if verbose
