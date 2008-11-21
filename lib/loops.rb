@@ -1,5 +1,4 @@
 require 'yaml'
-require 'loops/process_manager'
 
 class Loops
   cattr_reader :config
@@ -44,11 +43,11 @@ class Loops
 
 private
 
-  # Proxy logger calls to the default Rails logger
+  # Proxy logger calls to the default loops logger
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL
       def self.#{meth_name}(message)
-        Rails.logger.#{meth_name} "\#{Time.now}: loops[RUNNER/\#{Process.pid}]: \#{message}"
+        LOOPS_DEFAULT_LOGGER.#{meth_name} "\#{Time.now}: loops[RUNNER/\#{Process.pid}]: \#{message}"
       end
     EVAL
   end
@@ -102,11 +101,11 @@ private
   def self.create_logger(loop_name, config)
     config['logger'] ||= 'default'
 
-    return Rails.logger if config['logger'] == 'default'
+    return LOOPS_DEFAULT_LOGGER if config['logger'] == 'default'
     return Logger.new(STDOUT) if config['logger'] == 'stdout'
     return Logger.new(STDERR) if config['logger'] == 'stderr'
     
-    config['logger'] = Rails.root + "/" + config['logger'] unless config['logger'] =~ /^\//
+    config['logger'] = File.join(LOOPS_ROOT, config['logger']) unless config['logger'] =~ /^\//
     Logger.new(config['logger'])
 
   rescue Exception => e
@@ -116,7 +115,7 @@ private
     message << "\nException: #{e} at #{e.backtrace.first}"
     error(message)
 
-    return Rails.logger
+    return LOOPS_DEFAULT_LOGGER
   end
 
   def self.setup_signals
@@ -143,5 +142,6 @@ private
   end
 end
 
+require 'loops/process_manager'
 require 'loops/base'
 require 'loops/queue'

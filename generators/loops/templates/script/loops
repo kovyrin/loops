@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+require 'rubygems'
 
-# We need this to be able to start the process w/o being in the RAILS_ROOT directory
-ROOT_DIR = File.dirname(File.dirname(__FILE__))
+# We need this to be able to start the process w/o being 
+# in the RAILS_ROOT (MERB_ROOT) directory
+ROOT_DIR = File.expand_path('../../../..', File.dirname(__FILE__))
 Dir.chdir(ROOT_DIR)
 
 # Default options
@@ -13,8 +15,10 @@ options = {
   :all_loops => false, 
   :list_loops => false, 
   :pid_file => nil, 
-  :stop => false ,
-  :rails_env => nil
+  :stop => false,
+  :kill => false,
+  :framework => 'rails',
+  :environment => nil
 }
 
 # Parse command line options
@@ -25,11 +29,13 @@ opts = OptionParser.new do |opt|
 
   opt.on('-d', '--daemonize', 'Daemonize when all loops started') { |v| options[:daemonize] = v }
   opt.on('-s', '--stop', 'Stop daemonized loops if running.') { |v| options[:stop] = v }
+  opt.on('-k', '--kill', 'Kill daemonized loops if running.') { |v| options[:kill] = v }
   opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') { |v| options[:pid_file] = v }
   opt.on('-l', '--loop=loop_name', 'Start specified loop(s) only') { |v| options[:loops] << v }
   opt.on('-a', '--all', 'Start all loops') { |v| options[:all_loops] = v }
   opt.on('-L', '--list', 'Shows all available loops with their options') { |v| options[:list_loops] = v }
-  opt.on('-e', '--environment=env', 'Set RAILS_ENV value') { |v| options[:rails_env] = v }
+  opt.on('-f', '--framework=name', 'Starts withing Rails (rails) or Merb (merb) framework') { |v| options[:framework] = v }
+  opt.on('-e', '--environment=env', 'Set RAILS_ENV (MERB_ENV) value') { |v| options[:environment] = v }
 
   opt.on_tail("-h", "--help", "Show this message") do
     puts(opt)
@@ -39,16 +45,31 @@ opts = OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-ENV['RAILS_ENV'] = options[:rails_env] if options[:rails_env]
+if options[:framework] == 'rails'
+  ENV['RAILS_ENV'] = options[:environment] if options[:environment]
 
-# Bootstrap rails
-require File.dirname(__FILE__) + '/../config/boot'
-require File.dirname(__FILE__) + '/../config/environment'
+  # Bootstrap Rails
+  require File.join(ROOT_DIR, 'config/boot')
+  require File.join(ROOT_DIR, 'config/environment')
+  
+  # Loops default logger
+  LOOPS_DEFAULT_LOGGER = Rails.logger
+else
+  require 'merb-core'
+
+  ENV['MERB_ENV'] = options[:environment] if options[:environment]
+
+  # Bootstrap Merb
+  Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
+
+  # Loops default logger
+  LOOPS_DEFAULT_LOGGER = Merb.logger
+end
 
 $LOAD_PATH.unshift("vendor/plugins/loops/lib")
 
-LOOPS_ROOT = Rails.root
-LOOPS_CONFIG_FILE = LOOPS_ROOT + "/config/loops.yml"
+LOOPS_ROOT = ROOT_DIR
+LOOPS_CONFIG_FILE = File.join(LOOPS_ROOT, 'config/loops.yml')
 
 require 'loops'
 require 'loops/daemonize'
@@ -57,7 +78,7 @@ require 'loops/daemonize'
 puts "Loading config..."
 Loops.load_config(LOOPS_CONFIG_FILE)
 options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
-options[:pid_file] = Rails.root + "/" + options[:pid_file] unless options[:pid_file] =~ /^\//
+options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
 
 # Stop loops if requested
 if options[:stop]
@@ -67,6 +88,22 @@ if options[:stop]
   print "Killing the process: #{pid}: "
   loop do
     Process.kill('SIGTERM', pid)
+    sleep(1)
+    break unless Loops::Daemonize.check_pid(options[:pid_file])
+    print(".")
+  end
+  puts " Done!"
+  exit(0)
+end
+
+# Kill loops if requested
+if options[:kill]
+  STDOUT.sync = true
+  raise "No pid file or no stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
+  pid = Loops::Daemonize.read_pid(options[:pid_file])
+  print "Killing the process: #{pid}: "
+  loop do
+    Process.kill('SIGINT', pid)
     sleep(1)
     break unless Loops::Daemonize.check_pid(options[:pid_file])
     print(".")

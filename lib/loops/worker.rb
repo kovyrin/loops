@@ -43,9 +43,10 @@ class Worker
   
   def stop(force = false)
     @shutdown = true
-    sig = force ? "SIGKILL" : "SIGTERM"
-    kill(sig, @pid)
+    sig = force ? 'SIGKILL' : 'SIGTERM'
+    logger.debug("Sending #{sig} to ##{@pid}")
+    Process.kill(sig, @pid)
   rescue Exception => e
-    # noop
+    logger.error("Exception from kill: #{e} at #{e.backtrace.first}")
   end
 end
