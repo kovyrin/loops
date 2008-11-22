@@ -5,7 +5,7 @@ require 'rubygems'
 
 # We need this to be able to start the process w/o being 
 # in the RAILS_ROOT (MERB_ROOT) directory
-ROOT_DIR = File.expand_path('../../../..', File.dirname(__FILE__))
+ROOT_DIR = File.expand_path('..', File.dirname(__FILE__))
 Dir.chdir(ROOT_DIR)
 
 # Default options
@@ -80,34 +80,21 @@ Loops.load_config(LOOPS_CONFIG_FILE)
 options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
 options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
 
-# Stop loops if requested
-if options[:stop]
+# Stop/kill loops if requested
+if options[:stop] || options[:kill]
   STDOUT.sync = true
   raise "No pid file or a stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
   pid = Loops::Daemonize.read_pid(options[:pid_file])
   print "Killing the process: #{pid}: "
+  sig = options[:stop] ? 'SIGTERM' : 'SIGINT'
+  
   loop do
-    Process.kill('SIGTERM', pid)
+    Process.kill(sig, pid)
     sleep(1)
     break unless Loops::Daemonize.check_pid(options[:pid_file])
     print(".")
   end
-  puts " Done!"
-  exit(0)
-end
-
-# Kill loops if requested
-if options[:kill]
-  STDOUT.sync = true
-  raise "No pid file or no stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
-  pid = Loops::Daemonize.read_pid(options[:pid_file])
-  print "Killing the process: #{pid}: "
-  loop do
-    Process.kill('SIGINT', pid)
-    sleep(1)
-    break unless Loops::Daemonize.check_pid(options[:pid_file])
-    print(".")
-  end
+  
   puts " Done!"
   exit(0)
 end
