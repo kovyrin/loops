@@ -2,18 +2,19 @@ class Loops::WorkerPool
   attr_reader :logger
   attr_reader :name
       
-  def initialize(name, logger, &blk)
+  def initialize(name, logger, engine, &blk)
     @name = name
     @logger = logger
     @worker_block = blk
     @shutdown = false
+    @engine = engine
     @workers = []
   end
   
   def start_workers(number)
     logger.debug("Creating #{number} workers for #{name} loop...")
     number.times do 
-      @workers << Worker.new(name, logger, &@worker_block)
+      @workers << Worker.new(name, logger, @engine, &@worker_block)
     end
   end
   

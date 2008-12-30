@@ -16,7 +16,6 @@ options = {
   :list_loops => false, 
   :pid_file => nil, 
   :stop => false,
-  :kill => false,
   :framework => 'rails',
   :environment => nil
 }
@@ -29,7 +28,6 @@ opts = OptionParser.new do |opt|
 
   opt.on('-d', '--daemonize', 'Daemonize when all loops started') { |v| options[:daemonize] = v }
   opt.on('-s', '--stop', 'Stop daemonized loops if running.') { |v| options[:stop] = v }
-  opt.on('-k', '--kill', 'Kill daemonized loops if running.') { |v| options[:kill] = v }
   opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') { |v| options[:pid_file] = v }
   opt.on('-l', '--loop=loop_name', 'Start specified loop(s) only') { |v| options[:loops] << v }
   opt.on('-a', '--all', 'Start all loops') { |v| options[:all_loops] = v }
@@ -81,15 +79,14 @@ options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
 options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
 
 # Stop/kill loops if requested
-if options[:stop] || options[:kill]
+if options[:stop]
   STDOUT.sync = true
   raise "No pid file or a stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
   pid = Loops::Daemonize.read_pid(options[:pid_file])
   print "Killing the process: #{pid}: "
-  sig = options[:stop] ? 'SIGTERM' : 'SIGINT'
   
   loop do
-    Process.kill(sig, pid)
+    Process.kill('SIGTERM', pid)
     sleep(1)
     break unless Loops::Daemonize.check_pid(options[:pid_file])
     print(".")

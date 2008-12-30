@@ -11,9 +11,14 @@ class Loops
     def self.check_pid(pid_file)
       pid = read_pid(pid_file)
       return false if pid.zero?
-      Process.kill(0, pid)
+      if defined?(::JRuby)
+        system "kill -0 #{pid} &> /dev/null"
+        return $? == 0
+      else 
+        Process.kill(0, pid)
+      end
       true
-    rescue Exception => e
+    rescue Errno::ESRCH, Errno::ECHILD, Errno::EPERM
       false
     end
     
@@ -37,6 +42,11 @@ class Loops
     end
     
     def self.daemonize(app_name)
+      if defined?(::JRuby)
+        puts "WARNING: daemonize method is not implemented for JRuby (yet), please consider using nohup."
+        return
+      end
+      
       srand # Split rand streams between spawning and daemonized process
       fork && exit # Fork and exit from the parent
 
@@ -53,20 +63,8 @@ class Loops
 
       Dir.chdir(Rails.root) # Make sure we're in the working directory
       File.umask(0000) # Insure sensible umask
- 
-#      redirect_io
-      
+
       return sess_id
-    end
-    
-    def self.redirect_io
-      [ STDIN, STDOUT, STDERR ].each do |io|
-        begin
-          io.reopen('/dev/null')
-        rescue ::Exception
-        end
-      end
-    end
-    
+    end    
   end
 end

@@ -5,7 +5,8 @@ class Loops::ProcessManager
   
   def initialize(config, logger)
     @config = {
-      'poll_period' => 1
+      'poll_period' => 1,
+      'workers_engine' => 'fork'
     }.merge(config)
     
     @logger = logger
@@ -17,13 +18,8 @@ class Loops::ProcessManager
     raise "Need a worker block!" unless block_given?
 
     logger.debug("Creating a workers pool of #{number} workers for #{name} loop...")
-    @worker_pools[name] = Loops::WorkerPool.new(name, logger, &blk)
+    @worker_pools[name] = Loops::WorkerPool.new(name, logger, @config['workers_engine'], &blk)
     @worker_pools[name].start_workers(number)
-  end
-  
-  def start_worker(name, &blk)
-    logger.debug("Creating worker #{name}...")
-    Worker.new(name, logger, &blk)
   end
   
   def monitor_workers
@@ -42,7 +38,11 @@ class Loops::ProcessManager
       sleep(@config['poll_period']) 
     end
   ensure
-    wait_for_workers
+    unless wait_for_workers(10)
+      logger.debug("Some workers are still alive after 10 seconds of waiting. Killing them...")
+      stop_workers(true)
+      wait_for_workers(5)
+    end
   end
   
   def setup_signals
@@ -51,9 +51,9 @@ class Loops::ProcessManager
     trap('EXIT') {}
   end
   
-  def wait_for_workers
-    loop do
-      logger.debug("Shutting down... waiting for workers to die...")
+  def wait_for_workers(seconds)
+    seconds.times do
+      logger.debug("Shutting down... waiting for workers to die (we have #{seconds} seconds)...")
       running_total = 0
 
       @worker_pools.each do |name, pool|
@@ -62,12 +62,14 @@ class Loops::ProcessManager
 
       if running_total.zero?
         logger.debug("All workers are dead. Exiting...")
-        break
+        return true
       end
       
-      logger.debug("#{running_total} workers are still running! Sleeping for 1 second...")
+      logger.debug("#{running_total} workers are still running! Sleeping for a second...")
       sleep(1)
-    end
+    end    
+
+    return false
   end
   
   def stop_workers(force = false)

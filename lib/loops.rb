@@ -119,19 +119,19 @@ private
   end
 
   def self.setup_signals
-    trap('TERM') { 
+    trap('TERM') {
       warn "Received a TERM signal... stopping..."
-      @@pm.stop_workers
+      @@pm.stop_workers!
     }
 
     trap('INT') { 
-      warn "Received an INT signal... forcefully-stopping..."
+      warn "Received an INT signal... stopping..."
       @@pm.stop_workers!
     }
 
     trap('EXIT') { 
       warn "Received a EXIT 'signal'... stopping..."
-      @@pm.stop_workers
+      @@pm.stop_workers!
     }
   end
   
