@@ -1,0 +1,47 @@
+= Simple background loops framework for rails and merb
+
+loops is a small and lightweight framework for Ruby on Rails and Merb created to support simple 
+background loops in your application which are usually used to do some background data processing 
+on your servers (queue workers, batch tasks processors, etc).
+
+
+== What tasks could you use it for?
+
+Originally loops plugin was created to make our own loops code more organized. We used to have tens 
+of different modules with methods that were called with script/runner and then used with nohup and 
+other not so convenient backgrounding techniques. When you have such a number of loops/workers to 
+run in background it becomes a nightmare to manage them on a regular basis (restarts, code upgrades, 
+status/health checking, etc).
+
+After a short time of writing our loops in more organized ways we were able to generalize most of the 
+loops code so now our loops look like a classes with a single mandatory public method called *run*. 
+Everything else (spawning many workers, managing them, logging, backgrounding, pid-files management, 
+etc) is handled by the plugin itself.
+
+
+== How to install?
+
+To install this plugin you need to do a few steps:
+* To install the plugin, you can use the following command:
+
+    ./script/plugin install git://github.com/kovyrin/loopsr.git
+
+This will install the whole package in your vendor/plugins directory.
+For merb applications, just check out the code and place it to the vendor/plugins directory.
+
+* Generate binary and configuration files by running 
+
+    ./script/generate loops 
+
+This will create the following list of files:
+* ./script/loops - binary file that will be used to manage your loops
+* ./config/loops.yml - example configuration file
+* ./app/loops/simple.rb - REALLY simple loop example
+
+
+== Who are the authors?
+
+This plugin has been created in Scribd.com for our internal use and then the sources were opened 
+for other people to use. All the code in this package has been developed by Alexey Kovyrin and 
+Dmytro Shteflyuk for Scribd.com and is released under the GPLv2 license. For more details, 
+see LICENSE file.
