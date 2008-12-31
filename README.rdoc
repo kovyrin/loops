@@ -37,6 +37,14 @@ This will create the following list of files:
 * ./script/loops - binary file that will be used to manage your loops
 * ./config/loops.yml - example configuration file
 * ./app/loops/simple.rb - REALLY simple loop example
+* ./app/loops/queue_loop.rb - simple ActiveMQ queue worker
+
+
+== What Ruby implementations it works for?
+
+We've tested and use the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
+daemonization in JRuby and never tested the code on Ruby 1.9. Obviously because of JVM limitations 
+you won't be able to use +fork+ workers engine in JRuby, but threaded workers do pretty well.
 
 
 == Who are the authors?
