@@ -104,7 +104,7 @@ options to your loop configuration:
     sleep_period: 10
     workers_number: 1  
 
-This `workers_number` options would say loops manager to spawn more than one copy of your loop 
+This _workers_number_ options would say loops manager to spawn more than one copy of your loop 
 and run them in parallel. The only thing you'd need to do is to think about concurrent work of 
 your loops. For example, if you have some kind of database table with elements you need to 
 process, you can create a simple database-based locks system or use any memcache-based locks.
