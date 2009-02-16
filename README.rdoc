@@ -141,6 +141,18 @@ need to add more workers (by adding <tt>workers_number: N</tt> option).
 _Warning_: This type of loops requires you to have stomp plugin installed in your system.
 
 
+== There is this <tt>workers_engine</tt> option in config file. What it could be used for?
+
+There are two so called "workers engines" in this plugin: _fork_ and _thread_. They're used 
+to control the way process manager would spawn new loops workers: with fork engine we'll 
+load all loops classes and then fork ruby interpreter as many times as many workers we need. 
+With thread engine we'd do Thread.new instead of forks. Thread engine could be useful if you 
+are sure your loop won't lock ruby interpreter (it does not do native calls, etc) or if you 
+use some interpreter that does not support forks (like jruby).
+
+Default engine is <tt>fork</tt>.
+
+
 == What Ruby implementations does it work for?
 
 We've tested and used the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
