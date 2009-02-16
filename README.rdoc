@@ -64,14 +64,23 @@ file:
 This is it! To start your loop, just run one of the following commands:
 
 * To list all configured loops:
+
   $ ./script/loops -l
+
 * To run all enabled (actually non-disabled) loops in foreground:
+
   $ ./script/loops
+
 * To run all enabled loops in background:
+
   $ ./script/loops -d
+
 * To run specific loop in background:
+
   $ ./script/loops -d -l hello_world
+
 * To see all possible options:
+
   $ ./script/loops -h
 
 
