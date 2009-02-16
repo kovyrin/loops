@@ -121,7 +121,7 @@ code and as the result, you can create a loops like this:
       def process_message(message)
         debug "Received a message: #{message.body}"
         debug "sleeping..."
-        sleep(0.5 + rand(10) / 10.0)
+        sleep(0.5 + rand(10) / 10.0) # do something "useful" with the message :-)
         debug "done..."
       end
     end
