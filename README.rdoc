@@ -19,6 +19,16 @@ Everything else (spawning many workers, managing them, logging, backgrounding, p
 etc) is handled by the plugin itself.
 
 
+== But there are dozens of libraries like this! Why do we need one more?
+
+The major idea behind this small project was to create a deadly simple and yet robust framework to 
+be able to run some tasks in background and do not think about spawning many workers, restarting 
+them when they die, etc. So, if you need to be able to run either one or many copies of your worker or 
+you do not want to think about re-spawning dead workers and do not want to spend megabytes of RAM on 
+separate copies of Ruby interpreter (when you run each copy of your loop as a separate process 
+controlled by monit/god/etc), then I'd recommend you o try this framework - you'd like it.
+
+
 == How to install?
 
 To install this plugin you need to do a few steps:
