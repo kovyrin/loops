@@ -24,7 +24,7 @@ etc) is handled by the plugin itself.
 To install this plugin you need to do a few steps:
 * To install the plugin, you can use the following command:
 
-    ./script/plugin install git://github.com/kovyrin/loopsr.git
+    ./script/plugin install git://github.com/kovyrin/loops.git
 
 This will install the whole package in your vendor/plugins directory.
 For merb applications, just check out the code and place it to the vendor/plugins directory.
