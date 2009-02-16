@@ -143,7 +143,7 @@ _Warning_: This type of loops requires you to have stomp plugin installed in you
 
 == What Ruby implementations does it work for?
 
-We've tested and use the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
+We've tested and used the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
 demonization in JRuby and never tested the code on Ruby 1.9. Obviously because of JVM limitations 
 you won't be able to use +fork+ workers engine in JRuby, but threaded workers do pretty well.
 
