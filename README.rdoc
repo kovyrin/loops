@@ -138,6 +138,8 @@ With configs like this:
 Of course, this solution scales perfectly and to make your queue processing faster you just 
 need to add more workers (by adding <tt>workers_number: N</tt> option).
 
+_Warning_: This type of loops requires you to have stomp plugin installed in your system.
+
 
 == What Ruby implementations does it work for?
 
