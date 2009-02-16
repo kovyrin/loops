@@ -40,6 +40,41 @@ This will create the following list of files:
 * ./app/loops/queue_loop.rb - simple ActiveMQ queue worker
 
 
+== How to use?
+
+Here is a simple loop scaffold for you to start from (put this file to app/loops/hello_world_loop.rb):
+
+  class HelloWorldLoop < Loops::Base
+    def run
+      with_period_of(1) do # period is in seconds
+        debug("Hello, debug log!")
+        sleep(config['sleep_period']) # Do something "useful" and make it configurable
+        debug("Hello, debug log (yes, once again)!")
+      end
+    end
+  end
+
+When you have your loop ready to use, add the following lines to your (maybe empty yet) config/loops.yml 
+file:
+
+  hello_world:
+    type: simple
+    sleep_period: 10
+
+This is it! To start your loop, just run one of the following commands:
+
+* To list all configured loops:
+  $ ./script/loops -l
+* To run all enabled (actually non-disabled) loops in foreground:
+  $ ./script/loops
+* To run all enabled loops in background:
+  $ ./script/loops -d
+* To run specific loop in background:
+  $ ./script/loops -d -l hello_world
+* To see all possible options:
+  $ ./script/loops -h
+
+
 == What Ruby implementations it works for?
 
 We've tested and use the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
