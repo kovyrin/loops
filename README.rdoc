@@ -26,7 +26,7 @@ be able to run some tasks in background and do not think about spawning many wor
 them when they die, etc. So, if you need to be able to run either one or many copies of your worker or 
 you do not want to think about re-spawning dead workers and do not want to spend megabytes of RAM on 
 separate copies of Ruby interpreter (when you run each copy of your loop as a separate process 
-controlled by monit/god/etc), then I'd recommend you o try this framework - you'd like it.
+controlled by monit/god/etc), then I'd recommend you to try this framework - you'd like it.
 
 
 == How to install?
