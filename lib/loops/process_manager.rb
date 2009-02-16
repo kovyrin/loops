@@ -1,4 +1,5 @@
 require 'loops/worker'
+require 'loops/worker_pool'
 
 class Loops::ProcessManager 
   attr_reader :logger
