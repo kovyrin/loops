@@ -84,7 +84,7 @@ This is it! To start your loop, just run one of the following commands:
     $ ./script/loops -h
 
 
-== What Ruby implementations it works for?
+== What Ruby implementations does it work for?
 
 We've tested and use the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
 daemonization in JRuby and never tested the code on Ruby 1.9. Obviously because of JVM limitations 
