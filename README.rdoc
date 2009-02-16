@@ -44,10 +44,10 @@ For merb applications, just check out the code and place it to the vendor/plugin
     ./script/generate loops 
 
 This will create the following list of files:
-* ./script/loops - binary file that will be used to manage your loops
-* ./config/loops.yml - example configuration file
-* ./app/loops/simple.rb - REALLY simple loop example
-* ./app/loops/queue_loop.rb - simple ActiveMQ queue worker
+* <tt>./script/loops</tt> - binary file that will be used to manage your loops
+* <tt>./config/loops.yml</tt> - example configuration file
+* <tt>./app/loops/simple.rb</tt> - REALLY simple loop example
+* <tt>./app/loops/queue_loop.rb</tt> - simple ActiveMQ queue worker
 
 
 == How to use?
