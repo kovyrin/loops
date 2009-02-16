@@ -59,8 +59,8 @@ EM.run {
 
 client = Stomp::Client.open "stomp://localhost:61613"
 
-10.times do |i|
-  client.send('/queue/loops/queue_loop', "hello world #{i}", :persistent => true)
+1.times do |i|
+  client.send('/queue/analytics/hits', "hello world #{i}", :persistent => true)
 end
 
 client.close

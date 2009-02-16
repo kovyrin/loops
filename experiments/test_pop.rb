@@ -70,7 +70,7 @@ puts "Connecting..."
 client = Stomp::Client.open "stomp://localhost:61613"
 
 puts "Subscribing..."
-client.subscribe('/queue/scribd/seo-loop', :ack => :client, "activemq.prefetchSize" => 1) do |msg|
+client.subscribe('/queue/analytics/hits', :ack => :client, "activemq.prefetchSize" => 1) do |msg|
   puts "Received message #{msg.inspect}"
   sleep 1
   client.acknowledge(msg)
