@@ -110,6 +110,35 @@ your loops. For example, if you have some kind of database table with elements y
 process, you can create a simple database-based locks system or use any memcache-based locks.
 
 
+== ActiveMQ-based workers? What's that?
+
+In some of our worker loops we poll ActiveMQ queue and process its items to perform some 
+asynchronous operations. So, to make it simpler for us to create such a workers, we've created 
+really simple loops class extension that wraps your code with basic queue polling/acknowledging 
+code and as the result, you can create a loops like this:
+
+    class MyQueueLoop < Loops::Queue
+      def process_message(message)
+        debug "Received a message: #{message.body}"
+        debug "sleeping..."
+        sleep(0.5 + rand(10) / 10.0)
+        debug "done..."
+      end
+    end
+
+With configs like this:
+
+    # An example of a STOMP queue-based loop
+    my_queue:
+      type: queue
+      host: 127.0.0.1
+      port: 61613
+      queue_name: blah
+
+Of course, this solution scales perfectly and to make your queue processing faster you just 
+need to add more workers (by adding <tt>workers_number: N</tt> option).
+
+
 == What Ruby implementations does it work for?
 
 We've tested and use the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
