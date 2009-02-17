@@ -75,15 +75,15 @@ This is it! To start your loop, just run one of the following commands:
 
 * To list all configured loops:
 
-    $ ./script/loops -l
+    $ ./script/loops -L
 
 * To run all enabled (actually non-disabled) loops in foreground:
 
-    $ ./script/loops
+    $ ./script/loops -a
 
 * To run all enabled loops in background:
 
-    $ ./script/loops -d
+    $ ./script/loops -d -a
 
 * To run specific loop in background:
 
