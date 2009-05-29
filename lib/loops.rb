@@ -41,6 +41,24 @@ class Loops
     info "Loops are stopped now!"
   end
 
+  def self.debug_loop!(loop_name)
+    @@pm = Loops::ProcessManager.new(global_config, @@logger)
+    loop_config = loops_config[loop_name]
+    
+    # Adjust loop config values before starting it in debug mode
+    loop_config['workers_number'] = 1
+    loop_config['debug_loop'] = true
+    
+    # Load loop class
+    unless klass = load_loop_class(loop_name)
+      puts "Can't load loop class!"
+      return false
+    end
+    
+    # Start the loop
+    start_loop(name, klass, loop_config)
+  end
+
 private
 
   # Proxy logger calls to the default loops logger
@@ -84,8 +102,8 @@ private
     puts "Starting loop: #{name}"
     info "Starting loop: #{name}"
     info " - config: #{config.inspect}"
-    
-    @@pm.start_workers(name, config['workers_number'] || 1) do
+
+    loop_proc = Proc.new do
       debug "Instantiating class: #{klass}"
       looop = klass.new(create_logger(name, config))
       looop.name = name
@@ -94,6 +112,13 @@ private
       debug "Starting the loop #{name}!"
       fix_ar_after_fork
       looop.run
+    end
+    
+    # If the loop is in debug mode, no need to use all kinds of process managers here
+    if config['debug_loop']
+      loop_proc.call
+    else
+      @@pm.start_workers(name, config['workers_number'] || 1) { loop_proc.call }
     end
   end
 
