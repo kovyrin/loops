@@ -36,6 +36,7 @@ opts = OptionParser.new do |opt|
   opt.on('-L', '--list', 'Shows all available loops with their options') { |v| options[:list_loops] = v }
   opt.on('-f', '--framework=name', 'Bootstraps Rails (rails - default value) or Merb (merb) before starting loops. Use "none" for plain ruby loops.') { |v| options[:framework] = v }
   opt.on('-e', '--environment=env', 'Set RAILS_ENV (MERB_ENV) value') { |v| options[:environment] = v }
+  opt.on('-rlibrary', '--require=library', 'require the library before executing the script') { |library| require library }
 
   opt.on_tail("-h", "--help", "Show this message") do
     puts(opt)
