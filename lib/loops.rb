@@ -71,11 +71,13 @@ private
   end
 
   def self.load_loop_class(name)
+    klass_files = [LOOPS_ROOT + "/app/loops/#{name}_loop.rb", "#{name}_loop"]
     begin
-      klass_file = LOOPS_ROOT + "/app/loops/#{name}_loop.rb" 
+      klass_file = klass_files.shift
       debug "Loading class file: #{klass_file}"
       require(klass_file)
-    rescue Exception
+    rescue LoadError
+      retry unless klass_files.empty?
       error "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
       return false
     end
