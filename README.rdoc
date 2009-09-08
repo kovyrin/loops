@@ -1,8 +1,8 @@
 = Simple background loops framework for rails and merb
 
-loops is a small and lightweight framework for Ruby on Rails and Merb created to support simple 
-background loops in your application which are usually used to do some background data processing 
-on your servers (queue workers, batch tasks processors, etc).
+loops is a small and lightweight framework for Ruby on Rails, Merb and other ruby frameworks created 
+to support simple background loops in your application which are usually used to do some background 
+data processing on your servers (queue workers, batch tasks processors, etc).
 
 
 == What tasks could you use it for?
@@ -141,7 +141,7 @@ need to add more workers (by adding <tt>workers_number: N</tt> option).
 _Warning_: This type of loops requires you to have stomp plugin installed in your system.
 
 
-== There is this <tt>workers_engine</tt> option in config file. What it could be used for?
+== There is this <tt>workers_engine</tt> option in the config file. What could it be used for?
 
 There are two so called "workers engines" in this plugin: <tt>fork</tt> and <tt>thread</tt>. They're used 
 to control the way process manager would spawn new loops workers: with <tt>fork</tt> engine we'll 
