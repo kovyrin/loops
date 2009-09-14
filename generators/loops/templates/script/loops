@@ -46,7 +46,53 @@ opts = OptionParser.new do |opt|
   opt.parse!(ARGV)
 end
 
-case options[:framework] 
+LOOPS_ROOT = ROOT_DIR
+LOOPS_CONFIG_FILE = File.join(LOOPS_ROOT, 'config/loops.yml')
+
+require 'loops'
+require 'loops/daemonize'
+
+# Load config file
+puts "Loading config..."
+Loops.load_config(LOOPS_CONFIG_FILE)
+options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
+options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
+
+
+# Stop/kill loops if requested
+if options[:stop]
+  STDOUT.sync = true
+  raise "No pid file or a stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
+  pid = Loops::Daemonize.read_pid(options[:pid_file])
+  print "Killing the process: #{pid}: "
+
+  loop do
+    Process.kill('SIGTERM', pid)
+    sleep(1)
+    break unless Loops::Daemonize.check_pid(options[:pid_file])
+    print(".")
+  end
+
+  puts " Done!"
+  exit(0)
+end
+
+
+# List loops if requested
+if options[:list_loops]
+  puts "Available loops:"
+  Loops.loops_config.each do |name, config|
+    puts "Loop: #{name}" + (config['disabled'] ? ' (disabled)' : '')
+    config.each do |k,v|
+      puts " - #{k}: #{v}"
+    end
+  end
+  puts
+  exit(0)
+end
+
+
+case options[:framework]
   when 'rails' then
     ENV['RAILS_ENV'] = options[:environment] if options[:environment]
 
@@ -86,54 +132,12 @@ end
 # For merb apps
 $LOAD_PATH.unshift("vendor/plugins/loops/lib")
 
-LOOPS_ROOT = ROOT_DIR
-LOOPS_CONFIG_FILE = File.join(LOOPS_ROOT, 'config/loops.yml')
-
-require 'loops'
-require 'loops/daemonize'
-
-# Load config file
-puts "Loading config..."
-Loops.load_config(LOOPS_CONFIG_FILE)
-options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
-options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
-
-# Stop/kill loops if requested
-if options[:stop]
-  STDOUT.sync = true
-  raise "No pid file or a stale pid file!" unless Loops::Daemonize.check_pid(options[:pid_file])
-  pid = Loops::Daemonize.read_pid(options[:pid_file])
-  print "Killing the process: #{pid}: "
-  
-  loop do
-    Process.kill('SIGTERM', pid)
-    sleep(1)
-    break unless Loops::Daemonize.check_pid(options[:pid_file])
-    print(".")
-  end
-  
-  puts " Done!"
-  exit(0)
-end
-
-# List loops if requested
-if options[:list_loops]
-  puts "Available loops:"
-  Loops.loops_config.each do |name, config|
-    puts "Loop: #{name}" + (config['disabled'] ? ' (disabled)' : '')
-    config.each do |k,v|
-      puts " - #{k}: #{v}"
-    end
-  end
-  puts
-  exit(0)
-end
-
 if options[:debug_loop]
   puts "Starting one loop in debug mode: #{options[:debug_loop]}"
   Loops.debug_loop!(options[:debug_loop])
   exit(0)
 end
+
 
 # Ignore --loop options if --all parameter passed
 options[:loops] = :all if options[:all_loops] 
