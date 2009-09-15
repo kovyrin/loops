@@ -114,7 +114,7 @@ case options[:framework]
     default_logger = Merb.logger
   when 'none' then 
     # Plain ruby loops
-    default_logger = Logger.new(STDOUT)
+    default_logger = Logger.new($stdout)
   else
     puts "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
     exit(1)
@@ -124,7 +124,7 @@ end
 # Use stdout for logging in debug loops
 if options[:debug_loop]
   puts "Using console for logging debug information"
-  LOOPS_DEFAULT_LOGGER = Logger.new(STDOUT)  
+  LOOPS_DEFAULT_LOGGER = Logger.new($stdout)  
 else
   LOOPS_DEFAULT_LOGGER = default_logger
 end

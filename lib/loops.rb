@@ -24,7 +24,7 @@ class Loops
       klass = load_loop_class(name)
       next unless klass
 
-      start_loop(name, klass, config) 
+      start_loop(name, klass, config)
       @@running_loops << name
     end
     
@@ -106,14 +106,24 @@ private
     info " - config: #{config.inspect}"
 
     loop_proc = Proc.new do
+      the_logger =
+          if Loops.logger.is_a?(Loops::Logger)
+            # this is happening right after the fork, therefore no need for teardown at the end of the proc
+            Loops.logger.logfile = config['logger']
+            Loops.logger
+          else
+            # for backwards compatibility
+            create_logger(name, config)
+          end 
+
       debug "Instantiating class: #{klass}"
-      looop = klass.new(create_logger(name, config))
-      looop.name = name
-      looop.config = config
-      
+      the_loop = klass.new(the_logger)
+      the_loop.name = name
+      the_loop.config = config
+
       debug "Starting the loop #{name}!"
       fix_ar_after_fork
-      looop.run
+      the_loop.run
     end
     
     # If the loop is in debug mode, no need to use all kinds of process managers here
@@ -124,13 +134,12 @@ private
     end
   end
 
-  # TODO: Need to add logs rotation parameters
   def self.create_logger(loop_name, config)
     config['logger'] ||= 'default'
 
     return LOOPS_DEFAULT_LOGGER if config['logger'] == 'default'
-    return Logger.new(STDOUT) if config['logger'] == 'stdout'
-    return Logger.new(STDERR) if config['logger'] == 'stderr'
+    return Logger.new($stdout) if config['logger'] == 'stdout'
+    return Logger.new($stderr) if config['logger'] == 'stderr'
     
     config['logger'] = File.join(LOOPS_ROOT, config['logger']) unless config['logger'] =~ /^\//
     Logger.new(config['logger'])
@@ -167,6 +176,15 @@ private
     ActiveRecord::Base.clear_active_connections!
     ActiveRecord::Base.verify_active_connections!
   end
+
+  def self.logger
+    @logger ||= Loops::Logger.new
+  end
+
+  def self.logger=(the_logger)
+    @logger = the_logger
+  end
+
 end
 
 require 'loops/process_manager'
