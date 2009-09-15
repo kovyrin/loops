@@ -1,8 +1,8 @@
 require 'logger'
 require 'delegate'
 
-module Loops
-  class Logger < Delegate
+class Loops
+  class Logger < ::Delegator
 
     def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 10 * 1024 * 1024, write_to_console = false)
       @number_of_files, @level, @max_file_size, @write_to_console =
@@ -13,7 +13,7 @@ module Loops
     def logfile=(logfile)
       coerced_logfile =
           case logfile
-          when 'default' then
+          when 'default' then $stdout
           when 'stdout' then $stdout
           when 'stderr' then $stderr
           when IO, StringIO then logfile  
@@ -51,7 +51,7 @@ module Loops
 
       def initialize(log_device, number_of_files = 10, max_file_size = 10 * 1024 * 1024, write_to_console = true)
         super(log_device, number_of_files, max_file_size)
-        self.formatter = Conversion::Log::Formatter.new(self)
+        self.formatter = Formatter.new(self)
         @write_to_console = write_to_console
         @prefix = nil
       end

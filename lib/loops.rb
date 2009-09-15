@@ -1,4 +1,5 @@
 require 'yaml'
+require 'loops/logger'
 
 class Loops
   cattr_reader :config
@@ -63,7 +64,7 @@ private
 
   # Proxy logger calls to the default loops logger
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
-    class_eval <<-EVAL
+    class_eval <<-EVAL, __FILE__, __LINE__
       def self.#{meth_name}(message)
         LOOPS_DEFAULT_LOGGER.#{meth_name} "\#{Time.now}: loops[RUNNER/\#{Process.pid}]: \#{message}"
       end
@@ -178,7 +179,7 @@ private
   end
 
   def self.logger
-    @logger ||= Loops::Logger.new
+    @logger ||= ::Loops::Logger.new
   end
 
   def self.logger=(the_logger)

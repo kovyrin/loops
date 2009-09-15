@@ -3,19 +3,19 @@
 require 'optparse'
 require 'rubygems'
 
-# We need this to be able to start the process w/o being 
+# We need this to be able to start the process w/o being
 # in the RAILS_ROOT (MERB_ROOT) directory
 ROOT_DIR = File.expand_path('..', File.dirname(__FILE__))
 Dir.chdir(ROOT_DIR)
 
 # Default options
-options = { 
-  :daemonize => false, 
-  :loops => [], 
+options = {
+  :daemonize => false,
+  :loops => [],
   :debug_loop => nil,
-  :all_loops => false, 
-  :list_loops => false, 
-  :pid_file => nil, 
+  :all_loops => false,
+  :list_loops => false,
+  :pid_file => nil,
   :stop => false,
   :framework => 'rails',
   :environment => nil
@@ -49,15 +49,53 @@ end
 LOOPS_ROOT = ROOT_DIR
 LOOPS_CONFIG_FILE = File.join(LOOPS_ROOT, 'config/loops.yml')
 
+case options[:framework]
+  when 'rails' then
+    ENV['RAILS_ENV'] = options[:environment] if options[:environment]
+
+    # Bootstrap Rails
+    require File.join(ROOT_DIR, 'config/boot')
+    require File.join(ROOT_DIR, 'config/environment')
+
+    # Loops default logger
+    default_logger = Rails.logger
+  when 'merb' then
+    require 'merb-core'
+
+    ENV['MERB_ENV'] = options[:environment] if options[:environment]
+
+    # Bootstrap Merb
+    Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
+
+    # Loops default logger
+    default_logger = Merb.logger
+  when 'none' then
+    # Plain ruby loops
+    default_logger = Logger.new($stdout)
+  else
+    puts "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
+    exit(1)
+end
+
+# Use stdout for logging in debug loops
+if options[:debug_loop]
+  puts "Using console for logging debug information"
+  LOOPS_DEFAULT_LOGGER = Logger.new($stdout)
+else
+  LOOPS_DEFAULT_LOGGER = default_logger
+end
+
+# For merb apps
+$LOAD_PATH.unshift("vendor/plugins/loops/lib")
+
 require 'loops'
 require 'loops/daemonize'
 
 # Load config file
-puts "Loading config..."
+puts "Loading loops config..."
 Loops.load_config(LOOPS_CONFIG_FILE)
 options[:pid_file] ||= (Loops.global_config['pid_file'] || "/var/run/loops.pid")
 options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
-
 
 # Stop/kill loops if requested
 if options[:stop]
@@ -77,7 +115,6 @@ if options[:stop]
   exit(0)
 end
 
-
 # List loops if requested
 if options[:list_loops]
   puts "Available loops:"
@@ -91,47 +128,6 @@ if options[:list_loops]
   exit(0)
 end
 
-
-case options[:framework]
-  when 'rails' then
-    ENV['RAILS_ENV'] = options[:environment] if options[:environment]
-
-    # Bootstrap Rails
-    require File.join(ROOT_DIR, 'config/boot')
-    require File.join(ROOT_DIR, 'config/environment')
-  
-    # Loops default logger
-    default_logger = Rails.logger
-  when 'merb' then
-    require 'merb-core'
-
-    ENV['MERB_ENV'] = options[:environment] if options[:environment]
-
-    # Bootstrap Merb
-    Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
-
-    # Loops default logger
-    default_logger = Merb.logger
-  when 'none' then 
-    # Plain ruby loops
-    default_logger = Logger.new($stdout)
-  else
-    puts "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
-    exit(1)
-end
-
-
-# Use stdout for logging in debug loops
-if options[:debug_loop]
-  puts "Using console for logging debug information"
-  LOOPS_DEFAULT_LOGGER = Logger.new($stdout)  
-else
-  LOOPS_DEFAULT_LOGGER = default_logger
-end
-
-# For merb apps
-$LOAD_PATH.unshift("vendor/plugins/loops/lib")
-
 if options[:debug_loop]
   puts "Starting one loop in debug mode: #{options[:debug_loop]}"
   Loops.debug_loop!(options[:debug_loop])
@@ -140,7 +136,7 @@ end
 
 
 # Ignore --loop options if --all parameter passed
-options[:loops] = :all if options[:all_loops] 
+options[:loops] = :all if options[:all_loops]
 
 # Check what loops we gonna run
 if options[:loops].empty?
@@ -157,12 +153,12 @@ end
 # Daemonization
 if options[:daemonize]
   app_name = "loops monitor: #{ options[:loops].join(' ') rescue 'all' }\0"
-  Loops::Daemonize.daemonize(app_name) 
+  Loops::Daemonize.daemonize(app_name)
 end
 
 # Pid file creation
 puts "Creating PID file"
-Loops::Daemonize.create_pid(options[:pid_file]) 
+Loops::Daemonize.create_pid(options[:pid_file])
 
 # Workers processing
 puts "Starting workers"
