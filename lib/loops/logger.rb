@@ -6,6 +6,7 @@ class Loops
 
     def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 100 * 1024 * 1024,
                    write_to_console = false)
+      super
       @number_of_files, @level, @max_file_size, @write_to_console =
           number_of_files, level, max_file_size, write_to_console
       self.logfile = logfile
@@ -45,6 +46,16 @@ class Loops
     # send everything else to @implementation
     def __getobj__
       @implementation or raise "Logger implementation not initialized"
+    end
+
+    # Delegator's method_missing ignores the &block argument (!!!?)
+    def method_missing(m, *args, &block)
+      target = self.__getobj__
+      unless target.respond_to?(m)
+        super(m, *args, &block)
+      else
+        target.__send__(m, *args, &block)
+      end
     end
 
     class LoggerImplementation < ::Logger
