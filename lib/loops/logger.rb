@@ -6,10 +6,10 @@ class Loops
 
     def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 100 * 1024 * 1024,
                    write_to_console = false)
-      super
       @number_of_files, @level, @max_file_size, @write_to_console =
           number_of_files, level, max_file_size, write_to_console
       self.logfile = logfile
+      super(@implementation)
     end
 
     def default_logfile=(logfile)
