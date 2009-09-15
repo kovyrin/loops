@@ -35,6 +35,13 @@ class Loops
       logfile
     end
 
+    # remember the level at the proxy level
+    def level=(level)
+      @level = level
+      @implementation.level = @level if @implementation
+      level
+    end
+
     # send everything else to @implementation
     def __getobj__
       @implementation or raise "Logger implementation not initialized"
