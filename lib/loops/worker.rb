@@ -22,10 +22,16 @@ class Worker
     return if shutdown?
     if @engine == 'fork'
       @pid = Kernel.fork do
-        $0 = "loop worker: #{@name}\0"
         @pid = Process.pid
-        @worker_block.call
-        exit(0)
+        begin
+          $0 = "loop worker: #@name\0"
+          @worker_block.call
+          exit(0)
+        rescue Exception => e
+          logger.fatal("#{e}\n  " + e.backtrace.join("\n  "))
+          logger.fatal("Terminating #@name worker ##@pid")
+          raise # so that the error gets written to stderr
+        end
       end
     elsif @engine == 'thread'
       @thread = Thread.start do
