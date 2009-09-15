@@ -11,12 +11,12 @@ class Loops
     @@global_config = @@config['global']
     @@loops_config = @@config['loops']
     
-    @@logger = create_logger('global', global_config)
+    Loops.logger.default_logfile = @@config['global']['logger'] || $stdout
   end
   
   def self.start_loops!(loops_to_start = :all)
     @@running_loops = []
-    @@pm = Loops::ProcessManager.new(global_config, @@logger)
+    @@pm = Loops::ProcessManager.new(global_config, Loops.logger)
     
     # Start all loops
     loops_config.each do |name, config|
@@ -43,7 +43,7 @@ class Loops
   end
 
   def self.debug_loop!(loop_name)
-    @@pm = Loops::ProcessManager.new(global_config, @@logger)
+    @@pm = Loops::ProcessManager.new(global_config, Loops.logger)
     loop_config = loops_config[loop_name]
     
     # Adjust loop config values before starting it in debug mode
@@ -66,7 +66,7 @@ private
   [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
     class_eval <<-EVAL, __FILE__, __LINE__
       def self.#{meth_name}(message)
-        LOOPS_DEFAULT_LOGGER.#{meth_name} "\#{Time.now}: loops[RUNNER/\#{Process.pid}]: \#{message}"
+        LOOPS_DEFAULT_LOGGER.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
       end
     EVAL
   end
@@ -108,12 +108,12 @@ private
 
     loop_proc = Proc.new do
       the_logger =
-          if Loops.logger.is_a?(Loops::Logger)
+          if Loops.logger.is_a?(Loops::Logger) && @@global_config['workers_engine'] == 'fork'
             # this is happening right after the fork, therefore no need for teardown at the end of the proc
             Loops.logger.logfile = config['logger']
             Loops.logger
           else
-            # for backwards compatibility
+            # for backwards compatibility and handling threading engine
             create_logger(name, config)
           end 
 

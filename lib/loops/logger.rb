@@ -4,23 +4,33 @@ require 'delegate'
 class Loops
   class Logger < ::Delegator
 
-    def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 10 * 1024 * 1024, write_to_console = false)
+    def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 100 * 1024 * 1024,
+                   write_to_console = false)
       @number_of_files, @level, @max_file_size, @write_to_console =
           number_of_files, level, max_file_size, write_to_console
       self.logfile = logfile
     end
 
+    def default_logfile=(logfile)
+      @default_logfile = logfile
+      self.logfile = logfile
+    end
+
     def logfile=(logfile)
+      logfile = @default_logfile || $stdout if logfile == 'default'
       coerced_logfile =
           case logfile
-          when 'default' then $stdout
           when 'stdout' then $stdout
           when 'stderr' then $stderr
           when IO, StringIO then logfile  
           else
-            logfile =~ /^\// ? logfile : File.join(LOOPS_ROOT, logfile)
+            if defined? LOOPS_ROOT
+              logfile =~ /^\// ? logfile : File.join(LOOPS_ROOT, logfile)
+            else
+              logfile
+            end 
           end
-      @implementation = LoggerImplementation.new(logfile, @number_of_files, @max_file_size, @write_to_console)
+      @implementation = LoggerImplementation.new(coerced_logfile, @number_of_files, @max_file_size, @write_to_console)
       @implementation.level = @level
       logfile
     end
