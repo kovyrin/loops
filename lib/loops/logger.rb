@@ -86,8 +86,10 @@ class Loops
 
       def add(severity, message = nil, progname = nil, &block)
         begin
-          message = color_errors(severity, message)
-          progname = color_errors(severity, progname)
+          if Loops.config['colorful_logs'] || Loops.config['colourful_logs']
+            message = color_errors(severity, message)
+            progname = color_errors(severity, progname)
+          end 
           super(severity, message, progname, &block)
           if @write_to_console && (message || progname)
             puts self.formatter.call(%w(D I W E F A)[severity] || 'A', Time.now, progname, message)
