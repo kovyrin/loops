@@ -86,7 +86,9 @@ class Loops
 
       def add(severity, message = nil, progname = nil, &block)
         begin
-          super
+          message = color_errors(severity, message)
+          progname = color_errors(severity, progname)
+          super(severity, message, progname, &block)
           if @write_to_console && (message || progname)
             puts self.formatter.call(%w(D I W E F A)[severity] || 'A', Time.now, progname, message)
           end
@@ -103,6 +105,18 @@ class Loops
           yield
         ensure
           @prefix = old_prefix
+        end
+      end
+
+      def color_errors(severity, line)
+        if severity < Logger::ERROR
+          line
+        else
+          if line && line !~ /\e/
+            "\e[31m#{line}\e[0m"
+          else
+            line
+          end
         end
       end
 
