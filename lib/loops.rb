@@ -5,7 +5,9 @@ class Loops
   cattr_reader :config
   cattr_reader :loops_config
   cattr_reader :global_config
-  
+
+  @@config = {}
+
   def self.load_config(file)
     @@config = YAML.load_file(file)
     @@global_config = @@config['global']
