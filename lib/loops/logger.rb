@@ -111,7 +111,7 @@ class Loops
       end
 
       def color_errors(severity, line)
-        if severity < Logger::ERROR
+        if severity < ::Logger::ERROR
           line
         else
           if line && line !~ /\e/
