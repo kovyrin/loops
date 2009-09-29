@@ -124,6 +124,7 @@ private
 
       debug "Starting the loop #{name}!"
       fix_ar_after_fork
+      srand   # reseed the random number generator in case Loops calls srand or rand prior to forking
       the_loop.run
     end
     

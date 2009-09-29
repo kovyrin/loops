@@ -47,7 +47,6 @@ class Loops
         return
       end
       
-      srand # Split rand streams between spawning and daemonized process
       fork && exit # Fork and exit from the parent
 
       # Detach from the controlling terminal
