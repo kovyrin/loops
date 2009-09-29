@@ -163,6 +163,6 @@ you won't be able to use +fork+ workers engine in JRuby, but threaded workers do
 == Who are the authors?
 
 This plugin has been created in Scribd.com for our internal use and then the sources were opened 
-for other people to use. All the code in this package has been developed by Alexey Kovyrin and 
-Dmytro Shteflyuk for Scribd.com and is released under the GPLv2 license. For more details, 
-see LICENSE file.
+for other people to use. All the code in this package has been developed by Alexey Kovyrin,
+Dmytro Shteflyuk and Alexey Verkhovsky for Scribd.com and is released under the MIT license.
+For more details, see LICENSE file.

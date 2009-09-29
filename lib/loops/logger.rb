@@ -70,9 +70,9 @@ class Loops
 
         def call(severity, time, progname, message)
           if @logger.prefix.blank?
-            "#{severity[0..0]} : #{time.strftime('%Y-%d-%m %H:%M:%S')} : #{message || progname}\n"
+            "#{severity[0..0]} : #{time.strftime('%Y-%m-%d %H:%M:%S')} : #{message || progname}\n"
           else
-            "#{severity[0..0]} : #{time.strftime('%Y-%d-%m %H:%M:%S')} : #{@logger.prefix} : #{message || progname}\n"
+            "#{severity[0..0]} : #{time.strftime('%Y-%m-%d %H:%M:%S')} : #{@logger.prefix} : #{message || progname}\n"
           end
         end
       end
@@ -86,7 +86,11 @@ class Loops
 
       def add(severity, message = nil, progname = nil, &block)
         begin
-          super
+          if Loops.config['colorful_logs'] || Loops.config['colourful_logs']
+            message = color_errors(severity, message)
+            progname = color_errors(severity, progname)
+          end 
+          super(severity, message, progname, &block)
           if @write_to_console && (message || progname)
             puts self.formatter.call(%w(D I W E F A)[severity] || 'A', Time.now, progname, message)
           end
@@ -103,6 +107,18 @@ class Loops
           yield
         ensure
           @prefix = old_prefix
+        end
+      end
+
+      def color_errors(severity, line)
+        if severity < ::Logger::ERROR
+          line
+        else
+          if line && line !~ /\e/
+            "\e[31m#{line}\e[0m"
+          else
+            line
+          end
         end
       end
 
