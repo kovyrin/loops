@@ -59,7 +59,7 @@ class Loops
     end
     
     # Start the loop
-    start_loop(name, klass, loop_config)
+    start_loop(loop_name, klass, loop_config)
   end
 
 private
