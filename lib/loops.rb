@@ -46,7 +46,7 @@ class Loops
 
   def self.debug_loop!(loop_name)
     @@pm = Loops::ProcessManager.new(global_config, Loops.logger)
-    loop_config = loops_config[loop_name]
+    loop_config = loops_config[loop_name] || {}
     
     # Adjust loop config values before starting it in debug mode
     loop_config['workers_number'] = 1
