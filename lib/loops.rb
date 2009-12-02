@@ -24,7 +24,8 @@ class Loops
     loops_config.each do |name, config|
       next if config['disabled']
       next unless loops_to_start == :all || loops_to_start.member?(name)
-      klass = load_loop_class(name)
+      require_files(config)
+      klass = load_loop_class(name, config)
       next unless klass
 
       start_loop(name, klass, config)
@@ -53,6 +54,7 @@ class Loops
     loop_config['debug_loop'] = true
     
     # Load loop class
+    require_files(loop_config)
     unless klass = load_loop_class(loop_name)
       puts "Can't load loop class!"
       return false
@@ -73,20 +75,30 @@ private
     EVAL
   end
 
-  def self.load_loop_class(name)
-    klass_files = [LOOPS_ROOT + "/app/loops/#{name}_loop.rb", "#{name}_loop"]
-    begin
-      klass_file = klass_files.shift
-      debug "Loading class file: #{klass_file}"
-      require(klass_file)
-    rescue LoadError
-      retry unless klass_files.empty?
-      error "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
-      return false
+  def self.require_files(config)
+    files = config['require_files']
+    return if files.nil?
+
+    if files.is_a?(String)
+      debug "requiring file '#{files}'"
+      require files
+    elsif files.is_a?(Array)
+      files.each do |file| 
+        next unless file.is_a?(String)
+        debug "requiring file '#{file}'"
+        require file
+      end
+    else
+      warn "Invalid require_files value #{files.inspect}  Need a String or Array of filenames to require."
     end
-    
-    klass_name = "#{name}_loop".classify
-    klass = klass_name.constantize rescue nil
+  end
+  
+  def self.load_loop_class(name, config)
+    klass = if klass_name = config['class_name']
+              klass_name.constantize rescue nil
+            else
+              load_default_loop_class(name)
+            end
     
     unless klass
       error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
@@ -101,6 +113,22 @@ private
     end
 
     return klass
+  end
+  
+  def self.load_default_loop_class(name)
+    klass_files = [LOOPS_ROOT + "/app/loops/#{name}_loop.rb", "#{name}_loop"]
+    begin
+      klass_file = klass_files.shift
+      debug "Loading class file: #{klass_file}"
+      require(klass_file)
+    rescue LoadError
+      retry unless klass_files.empty?
+      error "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
+      return false
+    end
+    
+    klass_name = "#{name}_loop".classify
+    klass_name.constantize rescue nil
   end
   
   def self.start_loop(name, klass, config)

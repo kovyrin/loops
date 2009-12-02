@@ -109,6 +109,27 @@ and run them in parallel. The only thing you'd need to do is to think about conc
 your loops. For example, if you have some kind of database table with elements you need to 
 process, you can create a simple database-based locks system or use any memcache-based locks.
 
+== How to run more than one loop using the same class?
+
+You can run the same loop class with different configuration parameters by explicitly identifying
+the loop class to execute:
+
+  hello:
+    type: simple
+    require_files: app/my_worker
+    class_name: MyWorker
+    language: English
+
+  salut:
+    type: simple
+    require_files: 
+		- app/my_worker
+    class_name: MyWorker
+    language: French
+
+First, the files listed in "require_files" are required.  Then the MyWorker class is called to 
+do the work.  Now two independent sets of loops are using the same class MyWorker customized by 
+the language parameter.
 
 == ActiveMQ-based workers? What's that?
 
