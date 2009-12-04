@@ -116,19 +116,15 @@ the loop class to execute:
 
   hello:
     type: simple
-    require_files: app/my_worker
-    class_name: MyWorker
+    loop_name: some_module/my_worker
     language: English
 
   salut:
     type: simple
-    require_files: 
-		- app/my_worker
-    class_name: MyWorker
+    loop_name: some_module/my_worker
     language: French
 
-First, the files listed in "require_files" are required.  Then the MyWorker class is called to 
-do the work.  Now two independent sets of loops are using the same class MyWorker customized by 
+Now two independent sets of loops are using the same class SomeModule::MyWorkerLoop customized by 
 the language parameter.
 
 == ActiveMQ-based workers? What's that?
