@@ -17,21 +17,29 @@ class Loops::Base
     EVAL
   end
 
-  def with_lock(entity_id, loop_id, timeout, entity_name = '')
+  def with_lock(entity_ids, loop_id, timeout, entity_name = '', &block)
     entity_name = 'item' if entity_name.to_s.empty?
+    entity_ids = [entity_ids] unless Array === entity_ids
 
-    debug("Locking #{entity_name} #{entity_id}")
-    lock = LoopLock.lock(:entity_id => entity_id, :loop => loop_id.to_s, :timeout => timeout)
-    unless lock
-      warn("Race condition detected for the #{entity_name}: #{entity_id}. Skipping the item.")
-      return
-    end
+    entity_ids.each do |entity_id|
+      debug("Locking #{entity_name} #{entity_id}")
+      lock = LoopLock.lock(:entity_id => entity_id, :loop => loop_id.to_s, :timeout => timeout)
+      unless lock
+        warn("Race condition detected for the #{entity_name}: #{entity_id}. Skipping the item.")
+        next
+      end
 
-    begin
-      yield
-    ensure
-      debug("Unlocking #{entity_name} #{entity_id}")
-      LoopLock.unlock(:entity_id => entity_id, :loop => loop_id.to_s)
+      begin
+        result = if block.arity == 1
+          yield entity_id
+        else
+          yield
+        end
+        return result
+      ensure
+        debug("Unlocking #{entity_name} #{entity_id}")
+        LoopLock.unlock(:entity_id => entity_id, :loop => loop_id.to_s)
+      end
     end
   end
 
