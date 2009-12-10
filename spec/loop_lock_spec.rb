@@ -1,14 +1,3 @@
-# == Schema Information
-# Schema version: 20090420101231
-#
-# Table name: loop_locks
-#
-#  entity_id  :integer(4)      not null
-#  loop       :string(255)     not null
-#  created_at :datetime        not null
-#  timeout_at :datetime        not null
-#
-
 require 'spec/spec_helper'
 
 describe LoopLock do

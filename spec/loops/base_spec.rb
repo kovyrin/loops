@@ -1,7 +1,5 @@
 require 'spec/spec_helper'
 
-require 'spec/spec_helper'
-
 describe Loops::Base, '#with_lock' do
   before :each do
     @logger = mock('Logger').as_null_object
