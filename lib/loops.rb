@@ -1,4 +1,5 @@
 require 'yaml'
+require 'erb'
 require 'loops/logger'
 
 class Loops
@@ -9,17 +10,21 @@ class Loops
   @@config = {}
 
   def self.load_config(file)
-    @@config = YAML.load_file(file)
+    # load and parse with erb
+    raw_config = File.read(file)
+    erb_config = ERB.new(raw_config).result
+
+    @@config = YAML.load(erb_config)
     @@global_config = @@config['global']
     @@loops_config = @@config['loops']
-    
+
     Loops.logger.default_logfile = @@config['global']['logger'] || $stdout
   end
-  
+
   def self.start_loops!(loops_to_start = :all)
     @@running_loops = []
     @@pm = Loops::ProcessManager.new(global_config, Loops.logger)
-    
+
     # Start all loops
     loops_config.each do |name, config|
       next if config['disabled']
@@ -30,7 +35,7 @@ class Loops
       start_loop(name, klass, config)
       @@running_loops << name
     end
-    
+
     # Do not continue if there is nothing to run
     if @@running_loops.empty?
       puts "WARNING: No loops to run! Exiting..."
@@ -47,17 +52,17 @@ class Loops
   def self.debug_loop!(loop_name)
     @@pm = Loops::ProcessManager.new(global_config, Loops.logger)
     loop_config = loops_config[loop_name] || {}
-    
+
     # Adjust loop config values before starting it in debug mode
     loop_config['workers_number'] = 1
     loop_config['debug_loop'] = true
-    
+
     # Load loop class
     unless klass = load_loop_class(loop_name)
       puts "Can't load loop class!"
       return false
     end
-    
+
     # Start the loop
     start_loop(loop_name, klass, loop_config)
   end
@@ -72,7 +77,7 @@ private
       end
     EVAL
   end
-  
+
   def self.load_loop_class(name, config)
     loop_name = config['loop_name'] || name
 
@@ -86,10 +91,10 @@ private
       error "Can't load the class file: #{klass_file}. Worker #{name} won't be started!"
       return false
     end
-    
+
     klass_name = "#{loop_name}_loop".classify
     klass = klass_name.constantize rescue nil
-    
+
     unless klass
       error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
       return false
@@ -104,7 +109,7 @@ private
 
     return klass
   end
-  
+
   def self.start_loop(name, klass, config)
     puts "Starting loop: #{name}"
     info "Starting loop: #{name}"
@@ -119,7 +124,7 @@ private
           else
             # for backwards compatibility and handling threading engine
             create_logger(name, config)
-          end 
+          end
 
       debug "Instantiating class: #{klass}"
       the_loop = klass.new(the_logger)
@@ -131,7 +136,7 @@ private
       srand   # reseed the random number generator in case Loops calls srand or rand prior to forking
       the_loop.run
     end
-    
+
     # If the loop is in debug mode, no need to use all kinds of process managers here
     if config['debug_loop']
       loop_proc.call
@@ -146,7 +151,7 @@ private
     return LOOPS_DEFAULT_LOGGER if config['logger'] == 'default'
     return Logger.new($stdout) if config['logger'] == 'stdout'
     return Logger.new($stderr) if config['logger'] == 'stderr'
-    
+
     config['logger'] = File.join(LOOPS_ROOT, config['logger']) unless config['logger'] =~ /^\//
     Logger.new(config['logger'])
 
@@ -166,17 +171,17 @@ private
       @@pm.stop_workers!
     }
 
-    trap('INT') { 
+    trap('INT') {
       warn "Received an INT signal... stopping..."
       @@pm.stop_workers!
     }
 
-    trap('EXIT') { 
+    trap('EXIT') {
       warn "Received a EXIT 'signal'... stopping..."
       @@pm.stop_workers!
     }
   end
-  
+
   def self.fix_ar_after_fork
     ActiveRecord::Base.allow_concurrency = true
     ActiveRecord::Base.clear_active_connections!
