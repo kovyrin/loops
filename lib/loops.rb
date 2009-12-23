@@ -58,7 +58,7 @@ class Loops
     loop_config['debug_loop'] = true
 
     # Load loop class
-    unless klass = load_loop_class(loop_name)
+    unless klass = load_loop_class(loop_name, loop_config)
       puts "Can't load loop class!"
       return false
     end
