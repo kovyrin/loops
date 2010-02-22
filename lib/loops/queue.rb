@@ -62,7 +62,7 @@ private
     setup_signals
   end
   
-  def disconnect_client
+  def disconnect_client_and_exit
     debug "Unsubscribing..."
     @client.unsubscribe(name) rescue nil
     @client.close() rescue nil
