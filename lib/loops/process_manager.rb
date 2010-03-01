@@ -3,18 +3,18 @@ require 'loops/worker_pool'
 
 class Loops::ProcessManager 
   attr_reader :logger
-  
+
   def initialize(config, logger)
     @config = {
       'poll_period' => 1,
       'workers_engine' => 'fork'
     }.merge(config)
-    
+
     @logger = logger
     @worker_pools = {}
     @shutdown = false
   end
-  
+
   def start_workers(name, number, &blk)
     raise "Need a worker block!" unless block_given?
 
@@ -22,10 +22,10 @@ class Loops::ProcessManager
     @worker_pools[name] = Loops::WorkerPool.new(name, logger, @config['workers_engine'], &blk)
     @worker_pools[name].start_workers(number)
   end
-  
+
   def monitor_workers
     setup_signals
-    
+
     logger.debug('Starting workers monitoring code...')
     loop do
       logger.debug('Checking workers\' health...')
@@ -33,7 +33,7 @@ class Loops::ProcessManager
         break if @shutdown
         pool.check_workers
       end
-      
+
       break if @shutdown
       logger.debug("Sleeping for #{@config['poll_period']} seconds...")
       sleep(@config['poll_period']) 
@@ -45,13 +45,13 @@ class Loops::ProcessManager
       wait_for_workers(5)
     end
   end
-  
+
   def setup_signals
     # Zombie rippers
     trap('CHLD') {}
     trap('EXIT') {}
   end
-  
+
   def wait_for_workers(seconds)
     seconds.times do
       logger.debug("Shutting down... waiting for workers to die (we have #{seconds} seconds)...")
@@ -65,14 +65,14 @@ class Loops::ProcessManager
         logger.debug("All workers are dead. Exiting...")
         return true
       end
-      
+
       logger.debug("#{running_total} workers are still running! Sleeping for a second...")
       sleep(1)
-    end    
+    end
 
     return false
   end
-  
+
   def stop_workers(force = false)
     return unless start_shutdown || force
     logger.debug("Stopping workers#{force ? '(forced)' : ''}...")
@@ -82,7 +82,7 @@ class Loops::ProcessManager
       pool.stop_workers(force)
     end
   end
-  
+
   def stop_workers!
     return unless start_shutdown
     stop_workers(false)
