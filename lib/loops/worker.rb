@@ -21,6 +21,12 @@ class Worker
   def run
     return if shutdown?
     if @engine == 'fork'
+      # Enable COW-friendly garbage collector in Ruby Enterprise Edition
+      # See http://www.rubyenterpriseedition.com/faq.html#adapt_apps_for_cow for more details
+      if GC.respond_to?(:copy_on_write_friendly=)
+        GC.copy_on_write_friendly = true
+      end
+
       @pid = Kernel.fork do
         @pid = Process.pid
         begin
