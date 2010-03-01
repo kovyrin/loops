@@ -5,19 +5,19 @@ class Worker
 
   def initialize(name, logger, engine, &blk)
     raise "Need a worker block!" unless block_given?
-    
+
     @name = name
     @logger = logger
     @engine = engine    
     @worker_block = blk
-    
+
     @shutdown = false
   end
-  
+
   def shutdown?
     @shutdown
   end
-  
+
   def run
     return if shutdown?
     if @engine == 'fork'
@@ -43,7 +43,7 @@ class Worker
   rescue Exception => e
     logger.error("Exception from worker: #{e} at #{e.backtrace.first}")
   end
-  
+
   def running?(verbose = false)
     return false if shutdown?
     if @engine == 'fork'
@@ -63,7 +63,7 @@ class Worker
       raise "Invalid engine name: #{@engine}"
     end
   end
-  
+
   def stop(force = false)
     @shutdown = true
     if @engine == 'fork'
