@@ -7,15 +7,15 @@ describe Loops do
     end
     
     it 'should load and parse Loops configuration file' do
-      Loops.load_config(@config_file)
-      Loops.config.should be_an_instance_of(Hash)
-      Loops.global_config.should be_an_instance_of(Hash)
-      Loops.loops_config.should be_an_instance_of(Hash)
+      Loops::Engine.load_config(@config_file)
+      Loops::Engine.config.should be_an_instance_of(Hash)
+      Loops::Engine.global_config.should be_an_instance_of(Hash)
+      Loops::Engine.loops_config.should be_an_instance_of(Hash)
     end
 
     it 'should process ERB in config file' do
-      Loops.load_config(@config_file)
-      Loops.global_config['loops_root'].should == LOOPS_ROOT
+      Loops::Engine.load_config(@config_file)
+      Loops::Engine.global_config['loops_root'].should == LOOPS_ROOT
     end
   end
 end

@@ -62,7 +62,7 @@ class LoopLock
     # Create new lock
     attributes = params.dup
     timeout = attributes.delete(:timeout)
-    timeout ||= 1.year
+    timeout ||= 3600 * 24
     attributes[:timeout_at] = Time.now + timeout
     @@locks << attributes
     true

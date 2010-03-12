@@ -9,7 +9,7 @@ describe Loops::Base, '#with_lock' do
   context 'when an entity is not locked' do
     it 'should create lock on an item' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do
+      @loop.with_lock(1, 'rspec', 60) do
         called = true
         LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_true
       end
@@ -18,7 +18,7 @@ describe Loops::Base, '#with_lock' do
 
     it 'should release lock on an item' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do
+      @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
       LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_false
@@ -28,7 +28,7 @@ describe Loops::Base, '#with_lock' do
     it 'should release lock on an item in case of error' do
       called = false
       expect {
-        @loop.with_lock(1, 'rspec', 1.minute) do
+        @loop.with_lock(1, 'rspec', 60) do
           called = true
           raise 'ouch'
         end
@@ -50,7 +50,7 @@ describe Loops::Base, '#with_lock' do
 
     it 'should release the lock on an item' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do
+      @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
       called.should be_true
@@ -59,7 +59,7 @@ describe Loops::Base, '#with_lock' do
     
     it 'should yield with entity_id value if block accepts the argument' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do |entity_id|
+      @loop.with_lock(1, 'rspec', 60) do |entity_id|
         called = true
         entity_id.should == 1
       end
@@ -74,7 +74,7 @@ describe Loops::Base, '#with_lock' do
 
     it 'should should not yield' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do
+      @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
       called.should be_false
@@ -82,7 +82,7 @@ describe Loops::Base, '#with_lock' do
 
     it 'should should not touch the lock object' do
       called = false
-      @loop.with_lock(1, 'rspec', 1.minute) do
+      @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
       LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_true

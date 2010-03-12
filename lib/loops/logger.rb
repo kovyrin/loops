@@ -1,7 +1,7 @@
 require 'logger'
 require 'delegate'
 
-class Loops
+module Loops
   class Logger < ::Delegator
 
     def initialize(logfile = $stdout, level = ::Logger::INFO, number_of_files = 10, max_file_size = 100 * 1024 * 1024,
@@ -23,13 +23,13 @@ class Loops
           case logfile
           when 'stdout' then $stdout
           when 'stderr' then $stderr
-          when IO, StringIO then logfile  
+          when IO, StringIO then logfile
           else
             if defined? LOOPS_ROOT
               logfile =~ /^\// ? logfile : File.join(LOOPS_ROOT, logfile)
             else
               logfile
-            end 
+            end
           end
       @implementation = LoggerImplementation.new(coerced_logfile, @number_of_files, @max_file_size, @write_to_console)
       @implementation.level = @level
@@ -89,7 +89,7 @@ class Loops
           if Loops.config['colorful_logs'] || Loops.config['colourful_logs']
             message = color_errors(severity, message)
             progname = color_errors(severity, progname)
-          end 
+          end
           super(severity, message, progname, &block)
           if @write_to_console && (message || progname)
             puts self.formatter.call(%w(D I W E F A)[severity] || 'A', Time.now, progname, message)
@@ -124,5 +124,4 @@ class Loops
 
     end
   end
-
 end
