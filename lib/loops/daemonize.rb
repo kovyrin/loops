@@ -60,7 +60,7 @@ module Loops
 
       $0 = app_name if app_name
 
-      Dir.chdir(LOOPS_ROOT) # Make sure we're in the working directory
+      Dir.chdir(Loops.root) # Make sure we're in the working directory
       File.umask(0000) # Insure sensible umask
 
       return sess_id

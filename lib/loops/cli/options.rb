@@ -20,39 +20,23 @@ module Loops
 
       # The hash of (parsed) command-line options
       attr_reader :options
+      
+      attr_reader :engine
 
       def option_parser
         @option_parser ||= OptionParser.new do |opt|
           opt.banner = "Usage: #{File.basename($0)} [options]"
-          opt.separator ""
+          opt.separator ''
+          opt.separator 'Available commands:'
+          opt.separator ''
           opt.separator 'Specific options:'
 
           opt.on('-d', '--daemonize', 'Daemonize when all loops started') do |daemonize|
-            options[:daemonize] = daemonize
-          end
-
-          opt.on('-s', '--stop', 'Stop daemonized loops if running.') do |stop|
-            options[:stop] = stop
+            options[:daemonize] = true
           end
 
           opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') do |pid_file|
             options[:pid_file] = pid_file
-          end
-
-          opt.on('-l', '--loop=loop_name', 'Start specified loop(s) only') do |loop_name|
-            options[:loops] << loop_name
-          end
-
-          opt.on('-D', '--debug=loop_name', 'Start single instance of a loop in foreground for debugging purposes') do |debug_loop|
-            options[:debug_loop] = debug_loop
-          end
-
-          opt.on('-a', '--all', 'Start all loops') do |all|
-            options[:all_loops] = all
-          end
-
-          opt.on('-L', '--list', 'Shows all available loops with their options') do |list|
-            options[:list_loops] = list
           end
 
           opt.on('-f', '--framework=name', 'Bootstraps Rails (rails - default value) or Merb (merb) before starting loops. Use "none" for plain ruby loops.') do |framework|
@@ -77,12 +61,7 @@ module Loops
       def parse_options!
         @options = {
           :daemonize => false,
-          :loops => [],
-          :debug_loop => nil,
-          :all_loops => false,
-          :list_loops => false,
           :pid_file => nil,
-          :stop => false,
           :framework => 'rails',
           :environment => nil
         }
@@ -95,44 +74,16 @@ module Loops
           exit
         end
 
-        Kernel.const_set('LOOPS_ROOT', guess_root_dir)
-        Dir.chdir(LOOPS_ROOT)
+        Loops.root = guess_root_dir
+        Dir.chdir(Loops.root)
 
         extract_command
         bootstrap
-        initialize_constants
-        load_config
+        start_engine
       end
 
       def extract_command
-        options[:command] = if options[:stop]
-          :stop
-        elsif options[:list_loops]
-          :list
-        elsif options[:debug_loop]
-          :debug
-        else
-          # Ignore --loop options if --all parameter passed
-          options[:loops] = :all if options[:all_loops]
-
-          # Check what loops we gonna run
-          if options[:loops].empty?
-            STDERR << option_parser
-            exit
-          end
-          :start
-        end
-      end
-
-      def initialize_constants
-        logger = if options[:debug_loop]
-          puts "Using console for logging debug information"
-          Logger.new($stdout)
-        else
-          options[:default_logger]
-        end
-        Kernel.const_set('LOOPS_DEFAULT_LOGGER', logger)
-        Kernel.const_set('LOOPS_CONFIG_FILE', File.join(LOOPS_ROOT, 'config/loops.yml'))
+        options[:command], *options[:args] = args
       end
 
       def guess_root_dir
@@ -159,11 +110,11 @@ module Loops
             ENV['RAILS_ENV'] = options[:environment] if options[:environment]
 
             # Bootstrap Rails
-            require File.join(LOOPS_ROOT, 'config/boot')
-            require File.join(LOOPS_ROOT, 'config/environment')
+            require Loops.root + 'config/boot'
+            require Loops.root + 'config/environment'
 
             # Loops default logger
-            options[:default_logger] = Rails.logger
+            Loops.default_logger = Rails.logger
           when 'merb' then
             require 'merb-core'
 
@@ -173,27 +124,26 @@ module Loops
             Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
 
             # Loops default logger
-            options[:default_logger] = Merb.logger
+            Loops.default_logger = Merb.logger
           when 'none' then
             # Plain ruby loops
-            options[:default_logger] = Logger.new($stdout)
+            Loops.default_logger = Loops::Logger.new($stdout)
           else
             abort "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
       end
 
-      def load_config
-        puts "Loading loops config..."
-        Loops::Engine.load_config(LOOPS_CONFIG_FILE)
-        unless options[:pid_file] ||= Loops::Engine.global_config['pid_file']
-          options[:pid_file] = if File.directory?(File.join(LOOPS_ROOT, 'tmp/pids'))
+      def start_engine
+        @engine = Loops::Engine.new
+        unless options[:pid_file] ||= @engine.global_config['pid_file']
+          options[:pid_file] = if Loops.root.join('tmp/pids').directory?
             'tmp/pids/loops.pid'
           else
             '/var/run/loops.pid'
           end
         end
 
-        options[:pid_file] = File.join(LOOPS_ROOT, options[:pid_file]) unless options[:pid_file] =~ /^\//
+        options[:pid_file] = Loops.root.join(options[:pid_file]).to_s unless options[:pid_file] =~ /^\//
       end
     end
   end
