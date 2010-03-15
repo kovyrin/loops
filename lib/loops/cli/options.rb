@@ -226,7 +226,8 @@ module Loops
           else
             raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
-        options[:framework]
+        options.delete(:environment)
+        options.delete(:framework)
       end
 
       # Initializes a loops engine instance.

@@ -30,13 +30,13 @@ describe Loops::CLI do
       end
 
       it 'should load config from config/loops.yml by default' do
-        @cli = Loops::CLI.parse(@args)
-        @cli.engine.global_config['pid_file'].should == '/var/run/superloops.pid'
+        cli = Loops::CLI.parse(@args)
+        cli.engine.global_config['pid_file'].should == '/var/run/superloops.pid'
       end
 
       it 'should load config from file specified' do
-        @cli = Loops::CLI.parse(@args << '-c' << 'config.yml')
-        @cli.engine.global_config['pid_file'].should == 'tmp/pids/loops.pid'
+        cli = Loops::CLI.parse(@args << '-c' << 'config.yml')
+        cli.engine.global_config['pid_file'].should == 'tmp/pids/loops.pid'
       end
 
       it 'should initialize use app/loops as a root directory for loops by default' do
@@ -50,18 +50,34 @@ describe Loops::CLI do
       end
 
       it 'should use pid file from global config section' do
-        @cli = Loops::CLI.parse(@args)
+        Loops::CLI.parse(@args)
         Loops.pid_file.should == Pathname.new('/var/run/superloops.pid')
       end
 
       it 'should absolutize relative pid file path' do
-        @cli = Loops::CLI.parse(@args << '-c' << 'config.yml')
+        Loops::CLI.parse(@args << '-c' << 'config.yml')
         Loops.pid_file.should == Pathname.new(RAILS_ROOT).realpath + 'tmp/pids/loops.pid'
       end
 
       it 'should accept pid file from arguments' do
-        @cli = Loops::CLI.parse(@args << '-p' << 'superloop.pid')
+        Loops::CLI.parse(@args << '-p' << 'superloop.pid')
         Loops.pid_file.should == Pathname.new(RAILS_ROOT).realpath + 'superloop.pid'
+      end
+
+      it 'should extract command when passed' do
+        cli = Loops::CLI.parse(@args << 'list')
+        cli.options[:command].should == 'list'
+      end
+
+      it 'should extract command arguments when passed' do
+        cli = Loops::CLI.parse(@args << 'list' << 'arg1' << 'arg2')
+        cli.options[:command].should == 'list'
+        cli.options[:args].should == %w(arg1 arg2)
+      end
+
+      it 'should remove all unnecessary options' do
+        cli = Loops::CLI.parse(@args << '-r' << RAILS_ROOT << '-p' << 'loop.pid' << '-c' << 'config.yml' << '-l' << '.' << '-d')
+        cli.options.keys.map(&:to_s).sort.should == %w(command args daemonize).sort
       end
     end
 
