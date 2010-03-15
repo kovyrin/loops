@@ -20,7 +20,7 @@ module Loops
       raise ArgumentError, "Need a worker block!" unless block_given?
 
       logger.debug("Creating a workers pool of #{number} workers for #{name} loop...")
-      @worker_pools[name] = Loops::WorkerPool.new(name, logger, @config['workers_engine'], &blk)
+      @worker_pools[name] = Loops::WorkerPool.new(name, self, @config['workers_engine'], &blk)
       @worker_pools[name].start_workers(number)
     end
 
@@ -29,13 +29,13 @@ module Loops
 
       logger.debug('Starting workers monitoring code...')
       loop do
-        logger.debug('Checking workers\' health...')
+        logger.debug("Checking workers' health...")
         @worker_pools.each do |name, pool|
-          break if @shutdown
+          break if shutdown?
           pool.check_workers
         end
 
-        break if @shutdown
+        break if shutdown?
         logger.debug("Sleeping for #{@config['poll_period']} seconds...")
         sleep(@config['poll_period'])
       end
@@ -75,8 +75,12 @@ module Loops
     end
 
     def stop_workers(force = false)
-      return unless start_shutdown || force
+      # Return if already shuting down (and not forced to stop)
+      return if shutdown? && !force
+
+      # Set shutdown flag
       logger.debug("Stopping workers#{force ? '(forced)' : ''}...")
+      start_shutdown!
 
       # Termination loop
       @worker_pools.each do |name, pool|
@@ -85,14 +89,27 @@ module Loops
     end
 
     def stop_workers!
-      return unless start_shutdown
+      # return if already shutting down
+      return if shutdown?
+
+      # Set shutdown flag
+      start_shutdown!
+
+      # Ask gently to stop
       stop_workers(false)
+
+      # Give it a second
       sleep(1)
+
+      # Forcefully stop the workers
       stop_workers(true)
     end
 
-    def start_shutdown
-      return false if @shutdown
+    def shutdown?
+      @shutdown
+    end
+
+    def start_shutdown!
       @shutdown = true
     end
   end

@@ -1,22 +1,23 @@
 module Loops
   class Worker
-    attr_reader :logger
     attr_reader :name
     attr_reader :pid
 
-    def initialize(name, logger, engine, &blk)
+    def initialize(name, pm, engine, &blk)
       raise ArgumentError, "Need a worker block!" unless block_given?
 
       @name = name
-      @logger = logger
+      @pm = pm
       @engine = engine
       @worker_block = blk
+    end
 
-      @shutdown = false
+    def logger
+      @pm.logger
     end
 
     def shutdown?
-      @shutdown
+      @pm.shutdown?
     end
 
     def run
@@ -31,12 +32,12 @@ module Loops
         @pid = Kernel.fork do
           @pid = Process.pid
           begin
-            $0 = "loop worker: #@name\0"
+            $0 = "loop worker: #{@name}\0"
             @worker_block.call
             exit(0)
           rescue Exception => e
             logger.fatal("#{e}\n  " + e.backtrace.join("\n  "))
-            logger.fatal("Terminating #@name worker ##@pid")
+            logger.fatal("Terminating #{@name} worker: #{@pid}")
             raise # so that the error gets written to stderr
           end
         end
@@ -72,7 +73,6 @@ module Loops
     end
 
     def stop(force = false)
-      @shutdown = true
       if @engine == 'fork'
         begin
           sig = force ? 'SIGKILL' : 'SIGTERM'
