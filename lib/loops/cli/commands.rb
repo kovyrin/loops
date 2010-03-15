@@ -99,9 +99,9 @@ module Loops
       def find_command(command_name)
         possibilities = find_command_possibilities(command_name)
         if possibilities.size > 1 then
-          raise "Ambiguous command #{command_name} matches [#{possibilities.join(', ')}]"
+          raise Loops::InvalidCommandError, "Ambiguous command #{command_name} matches [#{possibilities.join(', ')}]"
         elsif possibilities.size < 1 then
-          raise "Unknown command #{command_name}"
+          raise Loops::InvalidCommandError, "Unknown command #{command_name}"
         end
 
         self.class[possibilities.first]

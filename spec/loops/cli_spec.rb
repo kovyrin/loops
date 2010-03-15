@@ -97,4 +97,41 @@ describe Loops::CLI do
       end
     end
   end
+
+  describe 'with Loops::CLI::Commands included' do
+    before :each do
+      @args = [ '-f', 'none', '-r', RAILS_ROOT]
+      @cli = Loops::CLI.parse(@args)
+    end
+
+    describe 'in #find_command_possibilities' do
+      it 'should return a list of possible commands' do
+        @cli.find_command_possibilities('s').should == %w(start stop)
+        @cli.find_command_possibilities('st').should == %w(start stop)
+        @cli.find_command_possibilities('sta').should == %w(start)
+        @cli.find_command_possibilities('l').should == %w(list)
+        @cli.find_command_possibilities('o').should == []
+      end
+    end
+
+    describe 'in #find_command' do
+      it 'should raise InvalidCommandError when command is not found' do
+        expect {
+          @cli.find_command('o')
+        }.to raise_error(Loops::InvalidCommandError)
+      end
+
+      it 'should raise InvalidCommandError when ambiguous command matches found' do
+        expect {
+          @cli.find_command('s')
+        }.to raise_error(Loops::InvalidCommandError)
+      end
+
+      it 'should return an instance of command when everything is ok' do
+        expect {
+          @cli.find_command('sta').should be_a(Loops::Commands::StartCommand)
+        }.to_not raise_error(Loops::InvalidCommandError)
+      end
+    end
+  end
 end
