@@ -1,6 +1,3 @@
-require 'loops/worker'
-require 'loops/worker_pool'
-
 module Loops
   class ProcessManager
     attr_reader :logger

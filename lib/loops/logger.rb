@@ -1,5 +1,6 @@
 require 'logger'
 require 'delegate'
+require 'fileutils'
 
 class Loops::Logger < ::Delegator
   # @return [Boolean]

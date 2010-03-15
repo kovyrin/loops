@@ -181,8 +181,10 @@ class Loops::Engine
     end
 
     def fix_ar_after_fork
-      ActiveRecord::Base.allow_concurrency = true
-      ActiveRecord::Base.clear_active_connections!
-      ActiveRecord::Base.verify_active_connections!
+      if Object.const_defined?('ActiveRecord')
+        ActiveRecord::Base.allow_concurrency = true
+        ActiveRecord::Base.clear_active_connections!
+        ActiveRecord::Base.verify_active_connections!
+      end
     end
 end
