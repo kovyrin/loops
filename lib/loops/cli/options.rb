@@ -81,7 +81,7 @@ module Loops
             options[:root] = root
           end
 
-          opt.on('-rlibrary', '--require=library', 'require the library before executing the script') do |library|
+          opt.on('-Rlibrary', '--require=library', 'require the library before executing the script') do |library|
             require library
           end
 
