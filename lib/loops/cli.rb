@@ -1,17 +1,32 @@
 %w(commands options).each { |p| require File.join(Loops::LIB_ROOT, 'loops/cli', p) }
 
 module Loops
+  # Command line interface for the Loops system.
+  #
+  # Used to parse command line options, initialize engine, and
+  # execute command requested.
+  #
+  # @example
+  #   Loops::CLI.execute
+  #
   class CLI
     include Commands, Options
 
+    # Register all available commands.
     register_command :list
     register_command :debug
     register_command :start
     register_command :stop
 
-    # The array of (unparsed) command-line options
+    # @return [Array<String>]
+    #   The +Array+ of (unparsed) command-line options.
     attr_reader :args
 
+    # Initializes a new instance of the {CLI} class.
+    #
+    # @param [Array<String>] args
+    #   an +Array+ of command line arguments.
+    #
     def initialize(args)
       @args = args.dup
     end

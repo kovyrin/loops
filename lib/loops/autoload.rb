@@ -8,9 +8,13 @@ module Loops
   autoload :Commands,       __p('command')
   autoload :Daemonize,      __p('daemonize')
   autoload :Engine,         __p('engine')
+  autoload :Errors,         __p('errors')
   autoload :Logger,         __p('logger')
   autoload :ProcessManager, __p('process_manager')
   autoload :Queue,          __p('queue')
   autoload :Worker,         __p('worker')
   autoload :WorkerPool,     __p('worker_pool')
+  autoload :Version,        __p('version')
+
+  include Errors
 end

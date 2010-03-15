@@ -5,8 +5,6 @@ class Loops::Engine
   
   attr_reader :global_config
   
-  attr_reader :logger
-  
   def initialize
     load_config
   end
@@ -20,12 +18,13 @@ class Loops::Engine
     @global_config = @config['global']
     @loops_config  = @config['loops']
 
-    @logger = ::Loops::Logger.new(@global_config['logger'] || $stdout)
+    Loops.logger.default_logfile = @global_config['logger'] || $stdout
+    Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
   end
 
   def start_loops!(loops_to_start = [])
     @running_loops = []
-    @pm = Loops::ProcessManager.new(global_config, logger)
+    @pm = Loops::ProcessManager.new(global_config, Loops.logger)
 
     # Start all loops
     loops_config.each do |name, config|
@@ -53,7 +52,7 @@ class Loops::Engine
   end
 
   def debug_loop!(loop_name)
-    @pm = Loops::ProcessManager.new(global_config, logger)
+    @pm = Loops::ProcessManager.new(global_config, Loops.logger)
     loop_config = loops_config[loop_name] || {}
 
     # Adjust loop config values before starting it in debug mode
@@ -76,7 +75,7 @@ class Loops::Engine
     [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
       class_eval <<-EVAL, __FILE__, __LINE__
         def #{meth_name}(message)
-          Loops.default_logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
+          Loops.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
         end
       EVAL
     end
@@ -120,10 +119,10 @@ class Loops::Engine
 
       loop_proc = Proc.new do
         the_logger =
-            if logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
+            if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
               # this is happening right after the fork, therefore no need for teardown at the end of the proc
-              logger.logfile = config['logger']
-              logger
+              Loops.logger.logfile = config['logger']
+              Loops.logger
             else
               # for backwards compatibility and handling threading engine
               create_logger(name, config)
