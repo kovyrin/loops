@@ -8,6 +8,9 @@ vendored_loops_binary = Dir[File.join(File.dirname(__FILE__),
                                          'bin',
                                          'loops')].first
 
+# Initialize loops root variable
+ENV['LOOPS_ROOT'] = File.expand_path(File.join(File.dirname(__FILE__), '..'))
+
 if vendored_loops_binary
   load File.expand_path(vendored_loops_binary)
 else

@@ -166,17 +166,15 @@ module Loops
       def guess_root_dir
         # Check for environment variable LOOP_ROOT containing
         # the application root folder
-        if options[:root]
-          # puts "Using root directory #{options[:root]} from arguments"
-          return options[:root]
-        end
+        return options[:root] = ENV['LOOPS_ROOT'] if ENV['LOOPS_ROOT']
+        # Check root parameter
+        return options[:root] if options[:root]
 
         # Try to detect root dir (should contain app subfolder)
         current_dir = Dir.pwd
         loop do
           if File.directory?(File.join(current_dir, 'app'))
             # Found it!
-            # puts "Using root directory #{current_dir}"
             return options[:root] = current_dir
           end
 
@@ -188,7 +186,6 @@ module Loops
 
         # Oops, not app folder found. Use the current dir as the root
         current_dir = Dir.pwd
-        # puts "Root directory guess failed. Using root dir #{current_dir}"
         options[:root] = current_dir
       end
 
