@@ -55,7 +55,13 @@ Gem::Specification.new do |s|
      "loops.gemspec",
      "spec/loop_lock_spec.rb",
      "spec/loops/base_spec.rb",
+     "spec/loops/cli_spec.rb",
      "spec/loops_spec.rb",
+     "spec/rails/another_loop.rb",
+     "spec/rails/app/loops/simple_loop.rb",
+     "spec/rails/config.yml",
+     "spec/rails/config/boot.rb",
+     "spec/rails/config/environment.rb",
      "spec/rails/config/loops.yml",
      "spec/spec_helper.rb"
   ]
@@ -67,7 +73,12 @@ Gem::Specification.new do |s|
   s.test_files = [
     "spec/loop_lock_spec.rb",
      "spec/loops/base_spec.rb",
+     "spec/loops/cli_spec.rb",
      "spec/loops_spec.rb",
+     "spec/rails/another_loop.rb",
+     "spec/rails/app/loops/simple_loop.rb",
+     "spec/rails/config/boot.rb",
+     "spec/rails/config/environment.rb",
      "spec/spec_helper.rb"
   ]
 

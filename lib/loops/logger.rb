@@ -154,7 +154,7 @@ class Loops::Logger < ::Delegator
       end
 
       def call(severity, time, progname, message)
-        if @logger.prefix.blank?
+        if (@logger.prefix || '').empty?
           "#{severity[0..0]} : #{time.strftime('%Y-%m-%d %H:%M:%S')} : #{message || progname}\n"
         else
           "#{severity[0..0]} : #{time.strftime('%Y-%m-%d %H:%M:%S')} : #{@logger.prefix} : #{message || progname}\n"

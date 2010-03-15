@@ -15,8 +15,11 @@ class Loops::Engine
     erb_config = ERB.new(raw_config).result
 
     @config = YAML.load(erb_config)
-    @global_config = @config['global']
     @loops_config  = @config['loops']
+    @global_config = {
+      'poll_period'    => 1,
+      'workers_engine' => 'fork'
+    }.merge(@config['global'])
 
     Loops.logger.default_logfile = @global_config['logger'] || $stdout
     Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
@@ -118,7 +121,7 @@ class Loops::Engine
       info " - config: #{config.inspect}"
 
       loop_proc = Proc.new do
-        the_logger =
+        the_logger = begin
             if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
               # this is happening right after the fork, therefore no need for teardown at the end of the proc
               Loops.logger.logfile = config['logger']
@@ -127,6 +130,7 @@ class Loops::Engine
               # for backwards compatibility and handling threading engine
               create_logger(name, config)
             end
+        end
 
         debug "Instantiating class: #{klass}"
         the_loop = klass.new(the_logger)
