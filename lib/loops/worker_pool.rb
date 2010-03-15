@@ -19,7 +19,7 @@ module Loops
     end
 
     def start_workers(number)
-      logger.debug("Creating #{number} workers for #{name} loop...")
+      logger.info("Creating #{number} workers for #{name} loop...")
       number.times do
         @workers << Worker.new(name, @pm, @engine, &@worker_block)
       end
@@ -29,7 +29,7 @@ module Loops
       logger.debug("Checking loop #{name} workers...")
       @workers.each do |worker|
         next if worker.running? || worker.shutdown?
-        logger.debug("Worker #{worker.name} is not running. Restart!")
+        logger.info("Worker #{worker.name} is not running. Restart!")
         worker.run
       end
     end
@@ -39,13 +39,13 @@ module Loops
       @workers.each do |worker|
         next unless worker.running?
         running += 1
-        logger.debug("Worker #{name} is still running (#{worker.pid})")
+        logger.info("Worker #{name} is still running (#{worker.pid})")
       end
       return running
     end
 
     def stop_workers(force)
-      logger.debug("Stopping loop #{name} workers...")
+      logger.info("Stopping loop #{name} workers...")
       @workers.each do |worker|
         next unless worker.running?
         worker.stop(force)

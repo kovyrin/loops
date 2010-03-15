@@ -39,7 +39,7 @@ module Loops
             exit(0)
           rescue Exception => e
             backtrace = normal_exit ? [] : e.backtrace
-            logger.fatal("#{e}\n  " + backtrace.join("\n  "))
+            logger.fatal("Worker exited with error: #{e} at #{backtrace.join("\n")}")
             logger.fatal("Terminating #{@name} worker: #{@pid}")
             raise # so that the error gets written to stderr
           end
@@ -56,7 +56,6 @@ module Loops
     end
 
     def running?(verbose = false)
-      return false if shutdown?
       if @engine == 'fork'
         return false unless @pid
         begin

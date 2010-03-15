@@ -24,7 +24,7 @@ module Loops
     def monitor_workers
       setup_signals
 
-      logger.debug('Starting workers monitoring code...')
+      logger.info('Starting workers monitoring code...')
       loop do
         logger.debug("Checking workers' health...")
         @worker_pools.each do |name, pool|
@@ -38,7 +38,7 @@ module Loops
       end
     ensure
       unless wait_for_workers(10)
-        logger.debug("Some workers are still alive after 10 seconds of waiting. Killing them...")
+        logger.info("Some workers are still alive after 10 seconds of waiting. Killing them...")
         stop_workers(true)
         wait_for_workers(5)
       end
@@ -52,7 +52,7 @@ module Loops
 
     def wait_for_workers(seconds)
       seconds.times do
-        logger.debug("Shutting down... waiting for workers to die (we have #{seconds} seconds)...")
+        logger.info("Shutting down... waiting for workers to die (we have #{seconds} seconds)...")
         running_total = 0
 
         @worker_pools.each do |name, pool|
@@ -60,11 +60,11 @@ module Loops
         end
 
         if running_total.zero?
-          logger.debug("All workers are dead. Exiting...")
+          logger.info("All workers are dead. Exiting...")
           return true
         end
 
-        logger.debug("#{running_total} workers are still running! Sleeping for a second...")
+        logger.info("#{running_total} workers are still running! Sleeping for a second...")
         sleep(1)
       end
 
@@ -76,7 +76,7 @@ module Loops
       return if shutdown? && !force
 
       # Set shutdown flag
-      logger.debug("Stopping workers#{force ? '(forced)' : ''}...")
+      logger.info("Stopping workers#{force ? '(forced)' : ''}...")
       start_shutdown!
 
       # Termination loop
@@ -107,6 +107,7 @@ module Loops
     end
 
     def start_shutdown!
+      logger.info("Starting shutdown (shutdown flag set)...")
       @shutdown = true
     end
   end
