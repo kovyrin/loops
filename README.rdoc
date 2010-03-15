@@ -1,8 +1,9 @@
 = Simple background loops framework
 
-loops is a small and lightweight framework for Ruby on Rails, Merb and other ruby frameworks created 
-to support simple background loops in your application which are usually used to do some background 
-data processing on your servers (queue workers, batch tasks processors, etc).
+<tt>loops</tt> is a small and lightweight framework for Ruby on Rails, Merb and other ruby 
+frameworks created to support simple background loops in your application which are usually 
+used to do some background data processing on your servers (queue workers, batch tasks 
+processors, etc).
 
 
 == What would you use it for?
@@ -197,6 +198,16 @@ We've tested and used the plugin on MRI 1.8.6/1.8.7 and on JRuby 1.4.0. At this 
 not support demonization in JRuby and never tested the code on Ruby 1.9. Obviously because 
 of JVM limitations you won't be able to use <tt>fork</tt> workers engine in JRuby, but 
 threaded workers do pretty well.
+
+
+== Migrating from pre-2.0 releases
+
+Before version 2.0 this code was developed as a Rails plugin only and did not have any 
+versions. So we call all those old versions a pre-2.0 releases. If you use one of those (if 
+your loops plugin does not have a <tt>VERSION.yml</tt> file in the root), be careful when 
+upgrading because there is an incompatible change we have made in 2.0 release: <tt>-h</tt>, 
+<tt>-a</tt>, <tt>-s</tt>, <tt>-L</tt> and <tt>-l</tt> options were deprecated 
+and replaced with a friendlier word commands. Use <tt>loops help</tt> to get help.
 
 
 == Who are the authors?
