@@ -13,15 +13,12 @@ class Loops::Commands::StartCommand < Loops::Command
     end
 
     # Pid file creation
-    puts "Creating PID file"
     Loops::Daemonize.create_pid(Loops.pid_file)
 
     # Workers processing
-    puts "Starting workers"
     engine.start_loops!(options[:args])
 
     # Workers exited, cleaning up
-    puts "Cleaning pid file..."
     File.delete(Loops.pid_file) rescue nil
   end
 end
