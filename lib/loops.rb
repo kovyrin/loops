@@ -18,8 +18,36 @@ module Loops
     @@root = Pathname.new(path)
   end
 
+  def self.config_file
+    @@config_file ||= root.join('config/loops.yml')
+  end
+
+  def self.config_file=(config_file)
+    @@config_file = root.join(config_file) if config_file
+  end
+
+  def self.loops_root
+    @@loops_root ||= root.join('app/loops')
+  end
+
+  def self.loops_root=(loops_root)
+    @@loops_root = root.join(loops_root) if loops_root
+  end
+
+  def self.pid_file
+    @@pid_file ||= root.join('loops.pid')
+  end
+
+  def self.pid_file=(pid_file)
+    @@pid_file = root.join(pid_file) if pid_file
+  end
+
   def self.logger
     @@logger ||= ::Loops::Logger.new($stdout)
+  end
+
+  def self.logger=(logger)
+    @@logger = logger
   end
 
   def self.default_logger
@@ -28,10 +56,6 @@ module Loops
 
   def self.default_logger=(logger)
     @@default_logger = logger
-  end
-
-  def self.config_file
-    root + 'config/loops.yml'
   end
 end
 

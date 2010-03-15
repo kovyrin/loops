@@ -53,27 +53,39 @@ module Loops
           opt.separator ''
           opt.separator 'Specific options:'
 
-          opt.on('-d', '--daemonize', 'Daemonize when all loops started') do |daemonize|
+          opt.on('-c', '--config=file', 'Configuration file') do |config_file|
+            options[:config_file] = config_file
+          end
+
+          opt.on('-d', '--daemonize', 'Daemonize when all loops started') do |value|
             options[:daemonize] = true
-          end
-
-          opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') do |pid_file|
-            options[:pid_file] = pid_file
-          end
-
-          opt.on('-f', '--framework=name', 'Bootstraps Rails (rails - default value) or Merb (merb) before starting loops. Use "none" for plain ruby loops.') do |framework|
-            options[:framework] = framework
           end
 
           opt.on('-e', '--environment=env', 'Set RAILS_ENV (MERB_ENV) value') do |env|
             options[:environment] = env
           end
 
+          opt.on('-f', '--framework=name', 'Bootstraps Rails (rails - default value) or Merb (merb) before starting loops. Use "none" for plain ruby loops.') do |framework|
+            options[:framework] = framework
+          end
+
+          opt.on('-l', '--loops=dir', 'Root directory with loops classes') do |loops_root|
+            options[:loops_root] = loops_root
+          end
+
+          opt.on('-p', '--pid=file', 'Override loops.yml pid_file option') do |pid_file|
+            options[:pid_file] = pid_file
+          end
+
+          opt.on('-r', '--root=dir', 'Root directory which will be used as a loops home dir (chdir)') do |root|
+            options[:root] = root
+          end
+
           opt.on('-rlibrary', '--require=library', 'require the library before executing the script') do |library|
             require library
           end
 
-          opt.on_tail("-h", "--help", "Show this message") do
+          opt.on_tail("-h", '--help', 'Show this message') do
             puts(opt)
             exit(0)
           end
@@ -90,10 +102,13 @@ module Loops
       #
       def parse_options!
         @options = {
-          :daemonize => false,
-          :pid_file => nil,
-          :framework => 'rails',
-          :environment => nil
+          :daemonize   => false,
+          :config_file => 'config/loops.yml',
+          :environment => nil,
+          :framework   => 'rails',
+          :loops_root  => 'app/loops',
+          :pid_file    => nil,
+          :root        => nil
         }
 
         begin
@@ -104,12 +119,22 @@ module Loops
           exit
         end
 
-        Loops.root = guess_root_dir
+        # Root directory
+        guess_root_dir
+        Loops.root = options.delete(:root)
         Dir.chdir(Loops.root)
 
-        extract_command
-        bootstrap
-        start_engine
+        # Config file
+        Loops.config_file = options.delete(:config_file)
+        # Loops root
+        Loops.loops_root  = options.delete(:loops_root)
+
+        extract_command!
+        bootstrap!
+        start_engine!
+
+        # Pid file
+        Loops.pid_file    = options.delete(:pid_file)
 
         @options
       end
@@ -121,6 +146,7 @@ module Loops
       #
       # @return [String]
       #   a command name passed.
+      #
       def extract_command!
         options[:command], *options[:args] = args
         options[:command]
@@ -135,9 +161,9 @@ module Loops
       def guess_root_dir
         # Check for environment variable LOOP_ROOT containing
         # the application root folder
-        if ENV['LOOPS_ROOT']
-          puts "Using root directory #{ENV['LOOPS_ROOT']} from LOOPS_ROOT environment variable"
-          return ENV['LOOPS_ROOT']
+        if options[:root]
+          puts "Using root directory #{options[:root]} from arguments"
+          return options[:root]
         end
 
         # Try to detect root dir (should contain app subfolder)
@@ -146,7 +172,7 @@ module Loops
           if File.directory?(File.join(current_dir, 'app'))
             # Found it!
             puts "Using root directory #{current_dir}"
-            return current_dir
+            return options[:root] = current_dir
           end
 
           # Move up the FS hierarhy
@@ -158,7 +184,7 @@ module Loops
         # Oops, not app folder found. Use the current dir as the root
         current_dir = Dir.pwd
         puts "Root directory guess failed. Using root dir #{current_dir}"
-        current_dir
+        options[:root] = current_dir
       end
 
       # Application bootstrap.
@@ -168,10 +194,12 @@ module Loops
       # the {Loops.default_logger} variable with the framework's
       # default logger value.
       #
+      # @return [String]
+      #   the used framework name (rails, merb, or none).
       # @raise [InvalidFrameworkError]
       #   occurred when unknown framework option value passed.
       #
-      def bootstrap
+      def bootstrap!
         case options[:framework]
           when 'rails'
             ENV['RAILS_ENV'] = options[:environment] if options[:environment]
@@ -198,6 +226,7 @@ module Loops
           else
             raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
+        options[:framework]
       end
 
       # Initializes a loops engine instance.
@@ -205,7 +234,10 @@ module Loops
       # Method loads and parses loops config file, and then
       # initializes pid file path.
       #
-      def start_engine
+      # @return [Engine]
+      #   a loops engine instance.
+      #
+      def start_engine!
         # Start loops engine
         @engine = Loops::Engine.new
         # If pid file option is not passed, get if from loops config ...
@@ -218,9 +250,7 @@ module Loops
             '/var/run/loops.pid'
           end
         end
-
-        # Resolve relative pid file path
-        options[:pid_file] = Loops.root.join(options[:pid_file]).to_s unless options[:pid_file] =~ /^\//
+        @engine
       end
     end
   end

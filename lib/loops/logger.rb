@@ -74,7 +74,7 @@ class Loops::Logger < ::Delegator
           end
         end
     # Ensure logging directory does exist
-    FileUtils.mkdir_p(File.dirname(coerced_logfile))
+    FileUtils.mkdir_p(File.dirname(coerced_logfile)) if String === coerced_logfile
 
     # Create a logger implementation.
     @implementation = LoggerImplementation.new(coerced_logfile, @number_of_files, @max_file_size, @write_to_console, @colorful_logs)
