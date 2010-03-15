@@ -162,7 +162,7 @@ module Loops
         # Check for environment variable LOOP_ROOT containing
         # the application root folder
         if options[:root]
-          puts "Using root directory #{options[:root]} from arguments"
+          # puts "Using root directory #{options[:root]} from arguments"
           return options[:root]
         end
 
@@ -171,7 +171,7 @@ module Loops
         loop do
           if File.directory?(File.join(current_dir, 'app'))
             # Found it!
-            puts "Using root directory #{current_dir}"
+            # puts "Using root directory #{current_dir}"
             return options[:root] = current_dir
           end
 
@@ -183,7 +183,7 @@ module Loops
 
         # Oops, not app folder found. Use the current dir as the root
         current_dir = Dir.pwd
-        puts "Root directory guess failed. Using root dir #{current_dir}"
+        # puts "Root directory guess failed. Using root dir #{current_dir}"
         options[:root] = current_dir
       end
 

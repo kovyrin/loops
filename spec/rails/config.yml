@@ -1,0 +1,6 @@
+global:
+  pid_file: tmp/pids/loops.pid
+
+loops:
+  another:
+    logger: logs/loops/another.log

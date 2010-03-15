@@ -3,19 +3,18 @@ require 'spec/spec_helper'
 describe Loops do
   describe '.load_config' do
     before :each do
-      @config_file = File.join(RAILS_ROOT, 'config/loops.yml')
+      Loops.root = RAILS_ROOT
+      @engine = Loops::Engine.new
     end
     
     it 'should load and parse Loops configuration file' do
-      Loops::Engine.load_config(@config_file)
-      Loops::Engine.config.should be_an_instance_of(Hash)
-      Loops::Engine.global_config.should be_an_instance_of(Hash)
-      Loops::Engine.loops_config.should be_an_instance_of(Hash)
+      @engine.config.should be_an_instance_of(Hash)
+      @engine.global_config.should be_an_instance_of(Hash)
+      @engine.loops_config.should be_an_instance_of(Hash)
     end
 
     it 'should process ERB in config file' do
-      Loops::Engine.load_config(@config_file)
-      Loops::Engine.global_config['loops_root'].should == LOOPS_ROOT
+      @engine.global_config['loops_root'].should == Pathname.new(RAILS_ROOT).realpath.to_s
     end
   end
 end
