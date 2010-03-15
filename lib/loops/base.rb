@@ -44,7 +44,7 @@ class Loops::Base
   end
 
   def with_period_of(seconds)
-    raise "No block given!" unless block_given?
+    raise ArgumentError, "No block given!" unless block_given?
     loop do
       yield
       sleep(seconds)

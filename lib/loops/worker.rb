@@ -5,7 +5,7 @@ module Loops
     attr_reader :pid
 
     def initialize(name, logger, engine, &blk)
-      raise "Need a worker block!" unless block_given?
+      raise ArgumentError, "Need a worker block!" unless block_given?
 
       @name = name
       @logger = logger
@@ -45,7 +45,7 @@ module Loops
           @worker_block.call
         end
       else
-        raise "Invalid engine name: #{@engine}"
+        raise ArgumentError, "Invalid engine name: #{@engine}"
       end
     rescue Exception => e
       logger.error("Exception from worker: #{e} at #{e.backtrace.first}")
@@ -67,7 +67,7 @@ module Loops
       elsif @engine == 'thread'
         @thread && @thread.alive?
       else
-        raise "Invalid engine name: #{@engine}"
+        raise ArgumentError, "Invalid engine name: #{@engine}"
       end
     end
 
@@ -84,7 +84,7 @@ module Loops
       elsif @engine == 'thread'
         force && !defined?(::JRuby) ? @thread.kill! : @thread.kill
       else
-        raise "Invalid engine name: #{@engine}"
+        raise ArgumentError, "Invalid engine name: #{@engine}"
       end
     end
   end

@@ -17,7 +17,7 @@ module Loops
     end
 
     def start_workers(name, number, &blk)
-      raise "Need a worker block!" unless block_given?
+      raise ArgumentError, "Need a worker block!" unless block_given?
 
       logger.debug("Creating a workers pool of #{number} workers for #{name} loop...")
       @worker_pools[name] = Loops::WorkerPool.new(name, logger, @config['workers_engine'], &blk)
@@ -48,7 +48,7 @@ module Loops
     end
 
     def setup_signals
-      # Zombie rippers
+      # Zombie reapers
       trap('CHLD') {}
       trap('EXIT') {}
     end
