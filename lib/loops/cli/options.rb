@@ -47,9 +47,9 @@ module Loops
       #
       def option_parser
         @option_parser ||= OptionParser.new do |opt|
-          opt.banner = "Usage: #{File.basename($0)} [options]"
+          opt.banner = "Usage: #{File.basename($0)} command [arg1 [arg2]] [options]"
           opt.separator ''
-          opt.separator 'Available commands:'
+          opt.separator COMMANDS_HELP
           opt.separator ''
           opt.separator 'Specific options:'
 
@@ -130,6 +130,11 @@ module Loops
         Loops.loops_root  = options.delete(:loops_root)
 
         extract_command!
+        unless options[:command]
+          puts option_parser
+          exit
+        end
+
         bootstrap!
         start_engine!
 
@@ -253,6 +258,15 @@ module Loops
         end
         @engine
       end
+
+      COMMANDS_HELP = <<-HELP
+Available commands:
+    list                             List available loops (based on config file)
+    start                            Start all loops except ones marked with disabled:true in config
+    start loop1 [loop2]              Start only loops specified
+    stop                             Stop daemonized loops monitor
+    debug loop                       Debug specified loop
+      HELP
     end
   end
 end

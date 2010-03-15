@@ -2,6 +2,7 @@ global:
   pid_file: /var/run/superloops.pid
   loops_root: <%= Loops.root.to_s %>
   colorful_logs: true
+  logger: logs/loops.log
 
 loops:
   simple:

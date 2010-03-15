@@ -11,7 +11,7 @@ describe Loops::CLI do
 
   describe 'with Loops::CLI::Options included' do
     before :each do
-      @args = [ '-f', 'none']
+      @args = [ 'list', '-f', 'none']
     end
 
     context 'when current directory could be detected' do
@@ -70,7 +70,7 @@ describe Loops::CLI do
       end
 
       it 'should extract command arguments when passed' do
-        cli = Loops::CLI.parse(@args << 'list' << 'arg1' << 'arg2')
+        cli = Loops::CLI.parse(@args << 'arg1' << 'arg2')
         cli.options[:command].should == 'list'
         cli.options[:args].should == %w(arg1 arg2)
       end
@@ -99,7 +99,7 @@ describe Loops::CLI do
 
     context 'with Rails framework' do
       before :each do
-        @args = ['-r', File.dirname(__FILE__) + '/../rails']
+        @args = [ 'list', '-r', File.dirname(__FILE__) + '/../rails' ]
         Loops::CLI.parse(@args)
       end
 
@@ -119,7 +119,7 @@ describe Loops::CLI do
 
   describe 'with Loops::CLI::Commands included' do
     before :each do
-      @args = [ '-f', 'none', '-r', RAILS_ROOT]
+      @args = [ 'list', '-f', 'none', '-r', RAILS_ROOT]
       @cli = Loops::CLI.parse(@args)
     end
 
