@@ -83,7 +83,7 @@ class Loops::Engine
     def load_loop_class(name, config)
       loop_name = config['loop_name'] || name
 
-      klass_files = [Loops.root + "app/loops/#{loop_name}_loop.rb", "#{loop_name}_loop"]
+      klass_files = [Loops.loops_root + "#{loop_name}_loop.rb", "#{loop_name}_loop"]
       begin
         klass_file = klass_files.shift
         debug "Loading class file: #{klass_file}"
@@ -94,8 +94,8 @@ class Loops::Engine
         return false
       end
 
-      klass_name = "#{loop_name}_loop".classify
-      klass = klass_name.constantize rescue nil
+      klass_name = "#{loop_name}_loop".capitalize.gsub(/_(.)/) { $1.upcase }
+      klass = Object.const_get(klass_name) rescue nil
 
       unless klass
         error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
