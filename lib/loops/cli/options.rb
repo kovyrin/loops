@@ -65,7 +65,7 @@ module Loops
             options[:environment] = env
           end
 
-          opt.on('-f', '--framework=name', 'Bootstraps Rails (rails - default value) or Merb (merb) before starting loops. Use "none" for plain ruby loops.') do |framework|
+          opt.on('-f', '--framework=name', "Bootstraps Rails (rails - default value) or Merb (merb) before#{SPLIT_HELP_LINE}starting loops. Use \"none\" for plain ruby loops.") do |framework|
             options[:framework] = framework
           end
 
@@ -130,7 +130,7 @@ module Loops
         Loops.loops_root  = options.delete(:loops_root)
 
         extract_command!
-        unless options[:command]
+        if options[:command].nil? || options[:command] == 'help'
           puts option_parser
           exit
         end
@@ -266,7 +266,10 @@ Available commands:
     start loop1 [loop2]              Start only loops specified
     stop                             Stop daemonized loops monitor
     debug loop                       Debug specified loop
+    help                             Show this message
       HELP
+
+      SPLIT_HELP_LINE = "\n#{' ' * 37}"
     end
   end
 end
