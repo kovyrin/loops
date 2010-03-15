@@ -31,12 +31,15 @@ module Loops
 
         @pid = Kernel.fork do
           @pid = Process.pid
+          normal_exit = false
           begin
             $0 = "loop worker: #{@name}\0"
             @worker_block.call
+            normal_exit = true
             exit(0)
           rescue Exception => e
-            logger.fatal("#{e}\n  " + e.backtrace.join("\n  "))
+            backtrace = normal_exit ? [] : e.backtrace
+            logger.fatal("#{e}\n  " + backtrace.join("\n  "))
             logger.fatal("Terminating #{@name} worker: #{@pid}")
             raise # so that the error gets written to stderr
           end

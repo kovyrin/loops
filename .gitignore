@@ -5,3 +5,4 @@ pkg
 .idea
 spec/rails/logs
 spec/rails/tmp
+*.pid
