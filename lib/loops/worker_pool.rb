@@ -6,7 +6,6 @@ module Loops
       @name = name
       @pm = pm
       @worker_block = blk
-      @shutdown = false
       @engine = engine
       @workers = []
     end
@@ -46,8 +45,6 @@ module Loops
     end
 
     def stop_workers(force)
-      return if @shutdown
-      @shutdown = false
       logger.debug("Stopping loop #{name} workers...")
       @workers.each do |worker|
         next unless worker.running?
