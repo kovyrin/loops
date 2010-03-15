@@ -140,17 +140,18 @@ class Loops::Engine
         end
 
         debug "Instantiating class: #{klass}"
-        the_loop = klass.new(@pm)
-        the_loop.name = name
-        the_loop.config = config
+        the_loop = klass.new(@pm, name, config)
 
         debug "Starting the loop #{name}!"
         fix_ar_after_fork
-        srand   # reseed the random number generator in case Loops calls srand or rand prior to forking
+        # reseed the random number generator in case Loops calls
+        # srand or rand prior to forking
+        srand
         the_loop.run
       end
 
-      # If the loop is in debug mode, no need to use all kinds of process managers here
+      # If the loop is in debug mode, no need to use all kinds of
+      # process managers here
       if config['debug_loop']
         loop_proc.call
       else
