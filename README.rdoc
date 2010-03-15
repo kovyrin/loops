@@ -5,6 +5,8 @@ frameworks created to support simple background loops in your application which 
 used to do some background data processing on your servers (queue workers, batch tasks 
 processors, etc).
 
+_Warning_: If you use some pre-2.0 version of this plugin, read a dedicated paragraph below.
+ 
 
 == What would you use it for?
 
@@ -202,10 +204,11 @@ threaded workers do pretty well.
 
 == Migrating from pre-2.0 releases
 
-Before version 2.0 this code was developed as a Rails plugin only and did not have any 
-versions. So we call all those old versions a pre-2.0 releases. If you use one of those (if 
-your loops plugin does not have a <tt>VERSION.yml</tt> file in the root), be careful when 
-upgrading because there is an incompatible change we have made in 2.0 release: <tt>-h</tt>, 
+Before version 2.0 has been released, this code was developed as a Rails plugin only and 
+did not have any versions numbering system in place. So we call all those old versions 
+a pre-2.0 releases. If you use one of those relases (if your loops plugin does not have 
+the <tt>VERSION.yml</tt> file in the root directory), be careful when upgrading because 
+there are a few incompatible changes we have made in the loops command: <tt>-h</tt>, 
 <tt>-a</tt>, <tt>-s</tt>, <tt>-L</tt> and <tt>-l</tt> options were deprecated 
 and replaced with a friendlier word commands. Use <tt>loops help</tt> to get help.
 
