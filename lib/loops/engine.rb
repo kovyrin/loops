@@ -131,6 +131,14 @@ class Loops::Engine
             end
         end
 
+        # Set logger level
+        if String === config['log_level']
+          level = Logger::Severity.const_get(config['log_level'].upcase) rescue nil
+          the_logger.level = level if level
+        elsif Integer === config['log_level']
+          the_logger.level = config['log_level']
+        end
+
         debug "Instantiating class: #{klass}"
         the_loop = klass.new(@pm)
         the_loop.name = name
