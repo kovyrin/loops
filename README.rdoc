@@ -48,16 +48,16 @@ And then run the command:
 
     sudo rake gems:install
 
-To install loops as a Rails plugin you need to do a few steps:
-
-* To install the plugin, you can use the following command:
+To install loops as a Rails plugin you need to do rhw following:
 
     ./script/plugin install git://github.com/kovyrin/loops.git
 
 This will install the whole package in your vendor/plugins directory.
 For merb applications, just check out the code and place it to the vendor/plugins directory.
 
-* Generate binary and configuration files by running 
+
+After you are done with the installation, you need to generate binary and configuration 
+files by running:
 
     ./script/generate loops 
 
@@ -111,6 +111,12 @@ This is it! To manage your loop, just run one of the following commands:
 * To see all possible options:
 
     $ ./script/loops help
+
+
+_Notice:_ If you use loops as a gem, you will get a system binary called <tt>loops</tt> which you 
+could use instead of your <tt>./script/loops<tt> binary:
+
+    $ loops help
 
 
 == How to run more than one worker?
