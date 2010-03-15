@@ -162,7 +162,7 @@ We use monit to keep loop monitors runnings. You could use something like this i
     check process loop-slow_logs with pidfile /your/project/current/tmp/pids/loop-slow_logs.pid
       group loops
       start program "/your/project/current/script/loops start slow_logs -e loops -p tmp/pids/loop-slow_logs.pid -d"
-      stop  program "/your/project/current/script/loops stop  slow_logs -e loops -p tmp/pids/loop-slow_logs.pid"
+      stop  program "/your/project/current/script/loops stop  slow_logs -e loops -p tmp/pids/loop-slow_logs.pid"
 
 
 == ActiveMQ-based workers? What's that?
