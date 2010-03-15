@@ -265,6 +265,7 @@ Available commands:
     start                            Start all loops except ones marked with disabled:true in config
     start loop1 [loop2]              Start only loops specified
     stop                             Stop daemonized loops monitor
+    stats                            Print loops memory statistics
     debug loop                       Debug specified loop
     help                             Show this message
       HELP

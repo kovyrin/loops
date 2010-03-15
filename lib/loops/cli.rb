@@ -17,6 +17,7 @@ module Loops
     register_command :debug
     register_command :start
     register_command :stop
+    register_command :stats
 
     # @return [Array<String>]
     #   The +Array+ of (unparsed) command-line options.
