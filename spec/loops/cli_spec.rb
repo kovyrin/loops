@@ -125,9 +125,9 @@ describe Loops::CLI do
 
     describe 'in #find_command_possibilities' do
       it 'should return a list of possible commands' do
-        @cli.find_command_possibilities('s').should == %w(start stop)
-        @cli.find_command_possibilities('st').should == %w(start stop)
-        @cli.find_command_possibilities('sta').should == %w(start)
+        @cli.find_command_possibilities('s').should == %w(start stats stop)
+        @cli.find_command_possibilities('sta').should == %w(start stats)
+        @cli.find_command_possibilities('star').should == %w(start)
         @cli.find_command_possibilities('l').should == %w(list)
         @cli.find_command_possibilities('o').should == []
       end
@@ -148,7 +148,7 @@ describe Loops::CLI do
 
       it 'should return an instance of command when everything is ok' do
         expect {
-          @cli.find_command('sta').should be_a(Loops::Commands::StartCommand)
+          @cli.find_command('star').should be_a(Loops::Commands::StartCommand)
         }.to_not raise_error(Loops::InvalidCommandError)
       end
     end

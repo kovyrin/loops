@@ -3,7 +3,7 @@ require 'spec/spec_helper'
 describe Loops::Base, '#with_lock' do
   before :each do
     @logger = mock('Logger').as_null_object
-    @loop = Loops::Base.new(@logger)
+    @loop = Loops::Base.new(@logger, 'simple', {})
   end
   
   context 'when an entity is not locked' do
