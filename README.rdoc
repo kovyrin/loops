@@ -1,37 +1,52 @@
-= Simple background loops framework for rails and merb
+= Simple background loops framework
 
 loops is a small and lightweight framework for Ruby on Rails, Merb and other ruby frameworks created 
 to support simple background loops in your application which are usually used to do some background 
 data processing on your servers (queue workers, batch tasks processors, etc).
 
 
-== What tasks could you use it for?
+== What would you use it for?
 
-Originally loops plugin was created to make our own loops code more organized. We used to have tens 
-of different modules with methods that were called with script/runner and then used with nohup and 
-other not so convenient backgrounding techniques. When you have such a number of loops/workers to 
-run in background it becomes a nightmare to manage them on a regular basis (restarts, code upgrades, 
-status/health checking, etc).
+Originally loops plugin was created to make our own loops code a bit more organized. We used 
+to have dozens of different modules with methods that were called with script/runner and then 
+used with nohup and other painful backgrounding techniques. When you have such a number of 
+loops/workers to run in background it becomes a nightmare to manage them on a regular basis 
+(restarts, code upgrades, status/health checking, etc).
 
-After a short time of writing our loops in more organized ways we were able to generalize most of the 
-loops code so now our loops look like a classes with a single mandatory public method called *run*. 
-Everything else (spawning many workers, managing them, logging, backgrounding, pid-files management, 
-etc) is handled by the plugin itself.
+After a few takes on writing our scripts in a more organized way we were able to generalize most 
+of the code so now our loops started looking like a classes with a single mandatory public method 
+called *run*. Everything else (spawning many workers, managing them, logging, backgrounding, 
+pid-files management, etc) is handled by the plugin itself.
 
 
-== But there are dozens of libraries like this! Why do we need one more?
+== But there are dozens of libraries like this! Why do we need yet another one?
 
 The major idea behind this small project was to create a deadly simple and yet robust framework to 
 be able to run some tasks in background and do not think about spawning many workers, restarting 
-them when they die, etc. So, if you need to be able to run either one or many copies of your worker or 
-you do not want to think about re-spawning dead workers and do not want to spend megabytes of RAM on 
-separate copies of Ruby interpreter (when you run each copy of your loop as a separate process 
-controlled by monit/god/etc), then I'd recommend you to try this framework -- you'd like it.
+them when they die, etc. So, if you need to be able to run either one or many copies of your worker 
+and you do not want to think about re-spawning your scripts when they die and you do not want to 
+spend megabytes of RAM on separate copies of Ruby interpreter (when you run each copy of your 
+loop as a separate process controlled by monit/god/etc), then you should try this framework -- 
+you're going to like it.
 
 
 == How to install?
 
-To install this plugin you need to do a few steps:
+There are two options when approaching db-charmer installation:
+
+* using the gem (recommended)
+* install as a Rails plugin
+
+To install as a gem, add this to your environment.rb: 
+
+    config.gem 'loops'
+
+And then run the command:
+
+    sudo rake gems:install
+
+To install loops as a Rails plugin you need to do a few steps:
+
 * To install the plugin, you can use the following command:
 
     ./script/plugin install git://github.com/kovyrin/loops.git
@@ -52,46 +67,47 @@ This will create the following list of files:
 
 == How to use?
 
-Here is a simple loop scaffold for you to start from (put this file to app/loops/hello_world_loop.rb):
+Here is a simple loop scaffold for you to start from (put this file to 
+<tt>app/loops/hello_world_loop.rb</tt>):
 
-  class HelloWorldLoop < Loops::Base
-    def run
-      with_period_of(1) do # period is in seconds
-        debug("Hello, debug log!")
-        sleep(config['sleep_period']) # Do something "useful" and make it configurable
-        debug("Hello, debug log (yes, once again)!")
+    class HelloWorldLoop < Loops::Base
+      def run
+        with_period_of(1) do # period is in seconds
+          debug("Hello, debug log!")
+          sleep(config['sleep_period']) # Do something "useful" and make it configurable
+          debug("Hello, debug log (yes, once again)!")
+        end
       end
     end
-  end
 
-When you have your loop ready to use, add the following lines to your (maybe empty yet) config/loops.yml 
-file:
+When you have your loop ready to use, add the following lines to your (maybe empty yet) 
+<tt>config/loops.yml</tt> file:
 
-  hello_world:
-    type: simple
-    sleep_period: 10
+    hello_world:
+      type: simple
+      sleep_period: 10
 
-This is it! To start your loop, just run one of the following commands:
+This is it! To manage your loop, just run one of the following commands:
 
 * To list all configured loops:
 
-    $ ./script/loops -L
+    $ ./script/loops list
 
 * To run all enabled (actually non-disabled) loops in foreground:
 
-    $ ./script/loops -a
+    $ ./script/loops start
 
 * To run all enabled loops in background:
 
-    $ ./script/loops -d -a
+    $ ./script/loops start -d
 
 * To run specific loop in background:
 
-    $ ./script/loops -d -l hello_world
+    $ ./script/loops start hello_world -d
 
 * To see all possible options:
 
-    $ ./script/loops -h
+    $ ./script/loops help
 
 
 == How to run more than one worker?
@@ -99,33 +115,36 @@ This is it! To start your loop, just run one of the following commands:
 If you want to have more than one copy of your worker running, that is as simple as adding one 
 option to your loop configuration:
 
-  hello_world:
-    type: simple
-    sleep_period: 10
-    workers_number: 1  
+    hello_world:
+      type: simple
+      sleep_period: 10
+      workers_number: 1  
 
-This _workers_number_ option would say loops manager to spawn more than one copy of your loop 
-and run them in parallel. The only thing you'd need to do is to think about concurrent work of 
-your loops. For example, if you have some kind of database table with elements you need to 
-process, you can create a simple database-based locks system or use any memcache-based locks.
+This <tt>workers_number</tt> option would tell loops manager to spawn more than one copy of 
+your loop and run them in parallel. The only thing you'd need to do is to remember about 
+concurrent work of your loops. For example, if you have some kind of database table with elements 
+you need to process, you can create a simple database-based locks system or use any 
+memcache-based locks.
+
 
 == How to run more than one loop using the same class?
 
 You can run the same loop class with different configuration parameters by explicitly identifying
 the loop class to execute:
 
-  hello:
-    type: simple
-    loop_name: some_module/my_worker
-    language: English
+    hello:
+      type: simple
+      loop_name: some_module/my_worker
+      language: English
 
-  salut:
-    type: simple
-    loop_name: some_module/my_worker
-    language: French
+    salut:
+      type: simple
+      loop_name: some_module/my_worker
+      language: French
 
-Now two independent sets of loops are using the same class SomeModule::MyWorkerLoop customized by 
-the language parameter.
+Now two independent sets of loops are using the same class <tt>SomeModule::MyWorkerLoop</tt> 
+customized by the language parameter.
+
 
 == ActiveMQ-based workers? What's that?
 
@@ -155,26 +174,29 @@ With configs like this:
 Of course, this solution scales perfectly and to make your queue processing faster you just 
 need to add more workers (by adding <tt>workers_number: N</tt> option).
 
-_Warning_: This type of loops requires you to have stomp plugin installed in your system.
+_Warning_: This type of loops requires you to have the <tt>stomp</tt> gem installed in your 
+system.
 
 
-== There is this <tt>workers_engine</tt> option in the config file. What could it be used for?
+== There is this <tt>workers_engine</tt> option in the config file. What do you use it for?
 
-There are two so called "workers engines" in this plugin: <tt>fork</tt> and <tt>thread</tt>. They're used 
-to control the way process manager would spawn new loops workers: with <tt>fork</tt> engine we'll 
-load all loops classes and then fork ruby interpreter as many times as many workers we need. 
-With <tt>thread</tt> engine we'd do Thread.new instead of forks. Thread engine could be useful if you 
-are sure your loop won't lock ruby interpreter (it does not do native calls, etc) or if you 
-use some interpreter that does not support forks (like jruby).
+There are two so called "workers engines" in loops: <tt>fork</tt> and <tt>thread</tt>. 
+They're used to control the way process manager would spawn new loops workers: 
+with the <tt>fork</tt> engine we'll load all the loops classes and then fork ruby interpreter 
+as many times as many workers we need. With the <tt>thread</tt> engine we'd do Thread.new 
+instead of forking. Thread engine could be useful if you are sure your loop won't lock 
+ruby interpreter (it does not do native calls, etc) or if you use some interpreter that does 
+not support forks (like jruby).
 
-Default engine is <tt>fork</tt>.
+The default engine is <tt>fork</tt>.
 
 
 == What Ruby implementations does it work for?
 
-We've tested and used the plugin on MRI 1.8.6 and on JRuby 1.1.5. At this point we do not support 
-demonization in JRuby and never tested the code on Ruby 1.9. Obviously because of JVM limitations 
-you won't be able to use +fork+ workers engine in JRuby, but threaded workers do pretty well.
+We've tested and used the plugin on MRI 1.8.6/1.8.7 and on JRuby 1.4.0. At this point we do 
+not support demonization in JRuby and never tested the code on Ruby 1.9. Obviously because 
+of JVM limitations you won't be able to use <tt>fork</tt> workers engine in JRuby, but 
+threaded workers do pretty well.
 
 
 == Who are the authors?
