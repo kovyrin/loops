@@ -76,7 +76,7 @@ module Loops
       return if shutdown? && !force
 
       # Set shutdown flag
-      logger.info("Stopping workers #{force ? '(forced)' : ''}...")
+      logger.info("Stopping workers#{force ? ' (forced)' : ''}...")
       start_shutdown!
 
       # Termination loop
