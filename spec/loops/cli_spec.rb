@@ -96,6 +96,25 @@ describe Loops::CLI do
         Dir.pwd.should == Pathname.new(RAILS_ROOT).realpath.to_s
       end
     end
+
+    context 'with Rails framework' do
+      before :each do
+        @args = ['-r', File.dirname(__FILE__) + '/../rails']
+        Loops::CLI.parse(@args)
+      end
+
+      it 'should load boot file' do
+        Object.const_defined?('RAILS_BOOT_LOADED').should be_true
+      end
+
+      it 'should load environment file' do
+        Object.const_defined?('RAILS_ENVIRONMENT_LOADED').should be_true
+      end
+
+      it 'should inialize default logger' do
+        Loops.default_logger.should == 'rails default logger'
+      end
+    end
   end
 
   describe 'with Loops::CLI::Commands included' do
