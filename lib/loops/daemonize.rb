@@ -33,7 +33,6 @@ module Loops
         File.delete(pid_file)
       end
 
-      puts "Creating pid file..."
       File.open(pid_file, 'w') do |f|
         f.puts(Process.pid)
       end
