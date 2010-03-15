@@ -1,8 +1,16 @@
 class Loops::Base
-  attr_accessor :name, :config, :logger
+  attr_accessor :name, :config
 
-  def initialize(logger)
-    self.logger = logger
+  def initialize(pm)
+    @pm = pm
+  end
+
+  def logger
+    @pm.logger
+  end
+
+  def shutdown?
+    @pm.shutdown?
   end
 
   # has no dependencies yet

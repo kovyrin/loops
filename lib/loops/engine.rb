@@ -2,9 +2,9 @@ class Loops::Engine
   attr_reader :config
 
   attr_reader :loops_config
-  
+
   attr_reader :global_config
-  
+
   def initialize
     load_config
   end
@@ -116,7 +116,6 @@ class Loops::Engine
     end
 
     def start_loop(name, klass, config)
-      puts "Starting loop: #{name}"
       info "Starting loop: #{name}"
       info " - config: #{config.inspect}"
 
@@ -133,7 +132,7 @@ class Loops::Engine
         end
 
         debug "Instantiating class: #{klass}"
-        the_loop = klass.new(the_logger)
+        the_loop = klass.new(@pm)
         the_loop.name = name
         the_loop.config = config
 

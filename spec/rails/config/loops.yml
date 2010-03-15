@@ -7,3 +7,6 @@ global:
 loops:
   simple:
     logger: logs/loops/simple.log
+
+  complex:
+    logger: logs/loops/complex.log
