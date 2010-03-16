@@ -140,8 +140,8 @@ class Loops::Engine
         end
 
         # Colorize logging?
-        if the_logger.respond_to(:colorful_logs=) && (colorful_logs = config['colorful_logs'] || config['colourful_logs'])
-          the_logger.colorful_logs = colors
+        if the_logger.respond_to?(:colorful_logs=) && (config.has_key?('colorful_logs') || config.has_key?('colourful_logs'))
+          the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
         end
 
         debug "Instantiating class: #{klass}"
