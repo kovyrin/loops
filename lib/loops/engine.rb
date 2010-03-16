@@ -139,6 +139,11 @@ class Loops::Engine
           the_logger.level = config['log_level']
         end
 
+        # Colorize logging?
+        if the_logger.respond_to(:colorful_logs=) && (colorful_logs = config['colorful_logs'] || config['colourful_logs'])
+          the_logger.colorful_logs = colors
+        end
+
         debug "Instantiating class: #{klass}"
         the_loop = klass.new(@pm, name, config)
 
