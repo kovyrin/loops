@@ -49,7 +49,6 @@ module Loops
               logger.fatal("Worker exited with error: #{message}\n  #{e.backtrace.join("\n  ")}")
             end
             logger.fatal("Terminating #{@name} worker: #{@pid}")
-            raise # so that the error gets written to stderr
           end
         end
       elsif @engine == 'thread'
