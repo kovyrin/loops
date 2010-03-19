@@ -38,8 +38,15 @@ module Loops
             normal_exit = true
             exit(0)
           rescue Exception => e
-            backtrace = normal_exit ? [] : e.backtrace
-            logger.fatal("Worker exited with error: #{e}\n  #{backtrace.join("\n  ")}")
+            if SystemExit === e and e.success?
+              if normal_exit
+                logger.info("Worker finished: normal return")
+              else
+                logger.info("Worker exited: #{e} at #{e.backtrace.first}")
+              end
+            else
+              logger.fatal("Worker exited with error: #{e}\n  #{e.backtrace.join("\n  ")}")
+            end
             logger.fatal("Terminating #{@name} worker: #{@pid}")
             raise # so that the error gets written to stderr
           end
