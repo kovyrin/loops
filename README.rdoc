@@ -217,6 +217,27 @@ not support demonization in JRuby and never tested the code on Ruby 1.9. Obvious
 of JVM limitations you won't be able to use <tt>fork</tt> workers engine in JRuby, but
 threaded workers do pretty well.
 
+Recommended version of ruby ro run loops is Ruby Enterprise Edition. This is because we
+have a support for their Copy-On-Write friendly garbage collector that makes your loops
+much smaller in memory (since they share the most of the code). Even with one loop process
+you'd save some memory because your loop monitor process would share most of the memory with
+the loop itself. When you run on RubyEE, you could use <tt>loops stats</tt> command to get
+detailed loops memory stats:
+
+        [root@analyics current]# ./script/loops stats
+
+        --------- Loops processes ----------
+        PID   PPID  VMSize    Private  Name
+        ------------------------------------
+        9062  1     199.3 MB  32.4 MB  loops monitor: activemq
+        9234  9062  211.9 MB  37.5 MB  loop worker: activemq
+        9251  9062  213.3 MB  38.4 MB  loop worker: activemq
+        9267  9062  211.9 MB  37.1 MB  loop worker: activemq
+        9268  9062  211.9 MB  38.0 MB  loop worker: activemq
+        ### Processes: 5
+        ### Total private dirty RSS: 183.33 MB
+
+
 
 == Migrating from pre-2.0 releases
 
