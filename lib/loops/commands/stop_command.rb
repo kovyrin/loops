@@ -15,4 +15,8 @@ class Loops::Commands::StopCommand < Loops::Command
     puts " Done!"
     exit(0)
   end
+
+  def requires_bootstrap?
+    false
+  end
 end

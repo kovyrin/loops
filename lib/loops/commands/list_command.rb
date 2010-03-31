@@ -8,4 +8,8 @@ class Loops::Commands::ListCommand < Loops::Command
       end
     end
   end
+
+  def requires_bootstrap?
+    false
+  end
 end

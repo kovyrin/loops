@@ -81,12 +81,7 @@ module Loops
       # Finds, instantiates and invokes a command.
       #
       def run!
-        if cmd = find_command(options[:command])
-          cmd.invoke(engine, options)
-        else
-          STDERR << option_parser
-          exit
-        end
+        @command.invoke(engine, options)
       end
 
       # Find and return an instance of {Command} by command name.

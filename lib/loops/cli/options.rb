@@ -129,11 +129,8 @@ module Loops
         # Loops root
         Loops.loops_root  = options.delete(:loops_root)
 
-        extract_command!
-        if options[:command].nil? || options[:command] == 'help'
-          puts option_parser
-          exit
-        end
+        @command = extract_command!
+        options[:framework] = 'none' unless @command.requires_bootstrap?
 
         bootstrap!
         start_engine!
@@ -154,7 +151,16 @@ module Loops
       #
       def extract_command!
         options[:command], *options[:args] = args
-        options[:command]
+        if options[:command].nil? || options[:command] == 'help'
+          puts option_parser
+          exit
+        end
+
+        unless command = find_command(options[:command])
+          STDERR << option_parser
+          exit
+        end
+        command
       end
 
       # Detect the application root directory (contatining "app"

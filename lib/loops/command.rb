@@ -29,6 +29,11 @@ class Loops::Command
   def execute
     raise 'Generic command has no actions'
   end
+
+  # Gets a value indicating whether command needs to bootstrap framework.
+  def requires_bootstrap?
+    true
+  end
 end
 
 # All Loops command registered.
