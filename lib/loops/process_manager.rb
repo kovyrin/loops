@@ -81,10 +81,8 @@ module Loops
       logger.info("Stopping workers#{force ? ' (forced)' : ''}...")
 
       # Termination loop
-      if master_process?
-        @worker_pools.each do |name, pool|
-          pool.stop_workers(force)
-        end
+      @worker_pools.each do |name, pool|
+        pool.stop_workers(force)
       end
     end
 
