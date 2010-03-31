@@ -1,6 +1,6 @@
 class ComplexLoop < Loops::Base
   def run
-    with_period_of(1.second) do
+    with_period_of(1) do
       if shutdown?
         info("Shutting down!")
         return # exit the loop
