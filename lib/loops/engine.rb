@@ -181,20 +181,14 @@ class Loops::Engine
     end
 
     def setup_signals
-      trap('TERM') {
-        warn "Received a TERM signal... stopping..."
-        @pm.stop_workers!
+      stop = proc {
+        warn "Received a signal... stopping..."
+        @pm.start_shutdown!
       }
 
-      trap('INT') {
-        warn "Received an INT signal... stopping..."
-        @pm.stop_workers!
-      }
-
-      trap('EXIT') {
-        warn "Received a EXIT 'signal'... stopping..."
-        @pm.stop_workers!
-      }
+      trap('TERM', stop)
+      trap('INT', stop)
+      trap('EXIT', stop)
     end
 
     def fix_ar_after_fork

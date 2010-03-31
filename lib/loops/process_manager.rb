@@ -37,6 +37,11 @@ module Loops
         sleep(@config['poll_period'])
       end
     ensure
+      logger.info("Workers monitoring loop is finished, starting shutdown...")
+      # Send out stop signals
+      stop_workers(false)
+
+      # Wait for all the workers to die
       unless wait_for_workers(10)
         logger.info("Some workers are still alive after 10 seconds of waiting. Killing them...")
         stop_workers(true)
@@ -72,34 +77,15 @@ module Loops
     end
 
     def stop_workers(force = false)
-      # Return if already shuting down (and not forced to stop)
-      return if shutdown? && !force
-
       # Set shutdown flag
       logger.info("Stopping workers#{force ? ' (forced)' : ''}...")
-      start_shutdown!
 
       # Termination loop
-      @worker_pools.each do |name, pool|
-        pool.stop_workers(force)
+      if master_process?
+        @worker_pools.each do |name, pool|
+          pool.stop_workers(force)
+        end
       end
-    end
-
-    def stop_workers!
-      # return if already shutting down
-      return if shutdown?
-
-      # Set shutdown flag
-      start_shutdown!
-
-      # Ask gently to stop
-      stop_workers(false)
-
-      # Give it a second
-      sleep(1)
-
-      # Forcefully stop the workers
-      stop_workers(true)
     end
 
     def shutdown?
