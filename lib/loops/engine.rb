@@ -97,8 +97,9 @@ class Loops::Engine
         return false
       end
 
-      klass_name = "#{loop_name}_loop".capitalize.gsub(/_(.)/) { $1.upcase }
+      klass_name = "#{loop_name}_loop".split('/').map { |x| x.capitalize.gsub(/_(.)/) { $1.upcase } }.join('::')
       klass = Object.const_get(klass_name) rescue nil
+      klass = klass_name.constantize if klass_name.respond_to?(:constantize) && !klass
 
       unless klass
         error "Can't find class: #{klass_name}. Worker #{name} won't be started!"
