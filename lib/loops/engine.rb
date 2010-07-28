@@ -120,6 +120,17 @@ class Loops::Engine
       info "Starting loop: #{name}"
       info " - config: #{config.inspect}"
 
+      begin
+        if klass.respond_to?(:initialize_loop)
+          info "Initializing loop"
+          klass.initialize_loop(config)
+          info "Initialization successful"
+        end
+      rescue Exception => e
+        error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
+        return
+      end
+
       loop_proc = Proc.new do
         the_logger = begin
             if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'

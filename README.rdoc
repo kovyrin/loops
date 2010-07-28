@@ -154,6 +154,24 @@ the loop class to execute:
 Now two independent sets of loops are using the same class <tt>SomeModule::MyWorkerLoop</tt>
 customized by the language parameter.
 
+== How to initialize the loop before workers run?
+
+You can run initialization code before starting loop workers by implementing the initialize_loop class method.  If
+initialize_loop raises an error, then the loop is not started and the error is logged.
+
+    class HelloWorldLoop < Loops::Base
+      def self.initialize_loop(config)
+        raise "Missing required dependency" unless File.exist?(config['my_dependency'])
+      end
+
+      def run
+        with_period_of(1) do # period is in seconds
+          debug("Hello, debug log!")
+          sleep(config['sleep_period']) # Do something "useful" and make it configurable
+          debug("Hello, debug log (yes, once again)!")
+        end
+      end
+    end
 
 == I want to keep my loop running on machine reboots. How to do it?
 
