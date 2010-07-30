@@ -122,9 +122,9 @@ class Loops::Engine
 
       begin
         if klass.respond_to?(:initialize_loop)
-          info "Initializing loop"
+          debug "Initializing loop"
           klass.initialize_loop(config)
-          info "Initialization successful"
+          debug "Initialization successful"
         end
       rescue Exception => e
         error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
