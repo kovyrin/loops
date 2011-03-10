@@ -129,6 +129,10 @@ class Loops::Logger < ::Delegator
     @implementation or raise "Logger implementation not initialized"
   end
 
+  def __setobj__(obj)
+    @implementation = obj
+  end
+
   # @private
   # Delegator's method_missing ignores the &block argument (!!!?)
   def method_missing(m, *args, &block)
