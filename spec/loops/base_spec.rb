@@ -1,11 +1,11 @@
-require 'spec/spec_helper'
+require 'spec_helper'
 
 describe Loops::Base, '#with_lock' do
   before :each do
     @logger = mock('Logger').as_null_object
     @loop = Loops::Base.new(@logger, 'simple', {})
   end
-  
+
   context 'when an entity is not locked' do
     it 'should create lock on an item' do
       called = false
@@ -56,7 +56,7 @@ describe Loops::Base, '#with_lock' do
       called.should be_true
       LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_false
     end
-    
+
     it 'should yield with entity_id value if block accepts the argument' do
       called = false
       @loop.with_lock(1, 'rspec', 60) do |entity_id|
