@@ -14,7 +14,6 @@ module Loops
   autoload :Queue,          __p('queue')
   autoload :Worker,         __p('worker')
   autoload :WorkerPool,     __p('worker_pool')
-  autoload :Version,        __p('version')
 
   include Errors
 end

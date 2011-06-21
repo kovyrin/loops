@@ -6,3 +6,5 @@ pkg
 spec/rails/logs
 spec/rails/tmp
 *.pid
+Gemfile.lock
+.rvmrc
