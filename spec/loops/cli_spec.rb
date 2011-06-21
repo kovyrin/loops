@@ -114,6 +114,30 @@ describe Loops::CLI do
       it 'should inialize default logger' do
         Loops.default_logger.should == 'rails default logger'
       end
+
+      it 'should not have LOOPS_ENV envionment variable by default' do
+        Loops::CLI.parse(@args)
+        ENV['LOOPS_ENV'].should be_nil
+        ENV['RAILS_ENV'].should be_nil
+      end
+    end
+
+    context 'with environment passed in arguments' do
+      before :each do
+        @args << '-e' << 'production'
+      end
+
+      it 'should set LOOPS_ENV environment variable' do
+        Loops::CLI.parse(@args)
+        ENV['LOOPS_ENV'].should == 'production'
+      end
+
+      it 'should set RAILS_ENV environment variable for Rails framework' do
+        @args = [ 'start', 'test', '-r', File.dirname(__FILE__) + '/../rails', '-e', 'production' ]
+        Loops::CLI.parse(@args)
+        ENV['LOOPS_ENV'].should == 'production'
+        ENV['RAILS_ENV'].should == 'production'
+      end
     end
   end
 

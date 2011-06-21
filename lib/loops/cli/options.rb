@@ -208,9 +208,10 @@ module Loops
       #   occurred when unknown framework option value passed.
       #
       def bootstrap!
+        loops_env = ENV['LOOPS_ENV'] = options[:environment] if options[:environment]
         case options[:framework]
           when 'rails'
-            ENV['RAILS_ENV'] = options[:environment] if options[:environment]
+            ENV['RAILS_ENV'] = loops_env
 
             # Bootstrap Rails
             require Loops.root + 'config/boot'
@@ -221,7 +222,7 @@ module Loops
           when 'merb'
             require 'merb-core'
 
-            ENV['MERB_ENV'] = options[:environment] if options[:environment]
+            ENV['MERB_ENV'] = loops_env
 
             # Bootstrap Merb
             Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
