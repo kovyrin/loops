@@ -1,6 +1,10 @@
 require 'spec/spec_helper'
 
 describe Loops::CLI do
+  before :each do
+    ENV['LOOPS_ENV'] = nil
+  end
+
   it 'should include Loops::CLI::Options' do
     Loops::CLI.included_modules.should include(Loops::CLI::Options)
   end
@@ -71,13 +75,13 @@ describe Loops::CLI do
 
       it 'should extract command arguments when passed' do
         cli = Loops::CLI.parse(@args << 'arg1' << 'arg2')
-        cli.options[:command].should == 'list'
-        cli.options[:args].should == %w(arg1 arg2)
+        cli.options[:command].should eq('list')
+        cli.options[:args].should eq(%w[arg1 arg2])
       end
 
       it 'should remove all unnecessary options' do
         cli = Loops::CLI.parse(@args << '-r' << RAILS_ROOT << '-p' << 'loop.pid' << '-c' << 'config.yml' << '-l' << '.' << '-d')
-        cli.options.keys.map(&:to_s).sort.should == %w(command args daemonize).sort
+        cli.options.keys.map(&:to_s).sort.should == %w(command args daemonize require).sort
       end
     end
 
@@ -135,8 +139,14 @@ describe Loops::CLI do
       it 'should set RAILS_ENV environment variable for Rails framework' do
         @args = [ 'start', 'test', '-r', File.dirname(__FILE__) + '/../rails', '-e', 'production' ]
         Loops::CLI.parse(@args)
-        ENV['LOOPS_ENV'].should == 'production'
-        ENV['RAILS_ENV'].should == 'production'
+        ENV['LOOPS_ENV'].should eq('production')
+        ENV['RAILS_ENV'].should eq('production')
+      end
+
+      it 'should set LOOPS_ENV before require files throut -R' do
+        @args << '-R' << File.dirname(__FILE__) + '/../rails/config/init'
+        Loops::CLI.parse(@args)
+        ::CURRENT_LOOPS_ENV.should == 'production'
       end
     end
   end
@@ -149,11 +159,11 @@ describe Loops::CLI do
 
     describe 'in #find_command_possibilities' do
       it 'should return a list of possible commands' do
-        @cli.find_command_possibilities('s').sort.should == %w(start stats stop)
-        @cli.find_command_possibilities('sta').sort.should == %w(start stats)
-        @cli.find_command_possibilities('star').should == %w(start)
-        @cli.find_command_possibilities('l').should == %w(list)
-        @cli.find_command_possibilities('o').should == []
+        @cli.find_command_possibilities('s').sort.should   eq(%w(start stats stop))
+        @cli.find_command_possibilities('sta').sort.should eq(%w(start stats))
+        @cli.find_command_possibilities('star').should     eq(%w(start))
+        @cli.find_command_possibilities('l').should        eq(%w(list))
+        @cli.find_command_possibilities('o').should        eq([])
       end
     end
 

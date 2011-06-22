@@ -82,7 +82,7 @@ module Loops
           end
 
           opt.on('-Rlibrary', '--require=library', 'require the library before executing the script') do |library|
-            require library
+            options[:require] << library
           end
 
           opt.on_tail("-h", '--help', 'Show this message') do
@@ -108,7 +108,8 @@ module Loops
           :framework   => 'rails',
           :loops_root  => 'app/loops',
           :pid_file    => nil,
-          :root        => nil
+          :root        => nil,
+          :require     => [],
         }
 
         begin
@@ -209,6 +210,11 @@ module Loops
       #
       def bootstrap!
         loops_env = ENV['LOOPS_ENV'] = options[:environment] if options[:environment]
+
+        options[:require].each do |library|
+          require library
+        end
+
         case options[:framework]
           when 'rails'
             ENV['RAILS_ENV'] = loops_env
