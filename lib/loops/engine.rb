@@ -205,9 +205,9 @@ class Loops::Engine
 
     def fix_ar_after_fork
       if Object.const_defined?('ActiveRecord')
-        if Rails::VERSION::MAJOR < 3
+        if ActiveRecord::VERSION::MAJOR < 3
           ActiveRecord::Base.allow_concurrency = true
-        else
+        elsif Object.const_defined?('Rails')
           Rails.application.config.allow_concurrency = true
         end
         ActiveRecord::Base.clear_active_connections!
