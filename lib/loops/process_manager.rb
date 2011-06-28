@@ -5,12 +5,18 @@ module Loops
     def initialize(config, logger)
       @config = {
         'poll_period' => 1,
-        'workers_engine' => 'fork'
+        'wait_period' => 10,
+        'workers_engine' => 'fork',
       }.merge(config)
 
       @logger = logger
       @worker_pools = {}
       @shutdown = false
+    end
+
+    def update_wait_period(period)
+      return unless period
+      @config['wait_period'] = [@config['wait_period'], period].max
     end
 
     def start_workers(name, number, &blk)
@@ -42,7 +48,7 @@ module Loops
       stop_workers(false)
 
       # Wait for all the workers to die
-      unless wait_for_workers(10)
+      unless wait_for_workers(@config['wait_period'])
         logger.info("Some workers are still alive after 10 seconds of waiting. Killing them...")
         stop_workers(true)
         wait_for_workers(5)

@@ -172,6 +172,9 @@ class Loops::Engine
       if config['debug_loop']
         loop_proc.call
       else
+        # If wait_period is specified for the loop, update ProcessManager's
+        # setting.
+        @pm.update_wait_period(config['wait_period']) if config['wait_period']
         @pm.start_workers(name, config['workers_number'] || 1) { loop_proc.call }
       end
     end
