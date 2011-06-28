@@ -35,26 +35,18 @@ you're going to like it.
 
 == How to install?
 
-There are two options when approaching db-charmer installation:
+Add the loops gem to your +Gemfile+:
 
-* using the gem (recommended)
-* install as a Rails plugin
+    gem 'loops'
 
-To install as a gem, add this to your environment.rb:
+And then run +bundle+ command.
 
-    config.gem 'loops'
-
-And then run the command:
-
-    sudo rake gems:install
-
-To install loops as a Rails plugin you need to do rhw following:
+To install loops as a Rails plugin you need to do the following:
 
     ./script/plugin install git://github.com/kovyrin/loops.git
 
-This will install the whole package in your vendor/plugins directory.
-For merb applications, just check out the code and place it to the vendor/plugins directory.
-
+This will install the whole package in your +vendor/plugins+ directory.
+For merb applications, just check out the code and place it to the +vendor/plugins+ directory.
 
 After you are done with the installation, you need to generate binary and configuration
 files by running:
@@ -62,10 +54,10 @@ files by running:
     ./script/generate loops
 
 This will create the following list of files:
-* <tt>./script/loops</tt> - binary file that will be used to manage your loops
-* <tt>./config/loops.yml</tt> - example configuration file
-* <tt>./app/loops/simple.rb</tt> - REALLY simple loop example
-* <tt>./app/loops/queue_loop.rb</tt> - simple ActiveMQ queue worker
+* <tt>./script/loops</tt> -- binary file that will be used to manage your loops
+* <tt>./config/loops.yml</tt> -- example configuration file
+* <tt>./app/loops/simple.rb</tt> -- REALLY simple loop example
+* <tt>./app/loops/queue_loop.rb</tt> -- simple ActiveMQ queue worker
 
 
 == How to use?
@@ -179,9 +171,15 @@ We use monit to keep loop monitors runnings. You could use something like this i
 
     check process loop-slow_logs with pidfile /your/project/current/tmp/pids/loop-slow_logs.pid
       group loops
+      start program "/bin/bash -c 'cd /your/project/current && /usr/bin/bundle exec loops start slow_logs -p /your/project/shared/pids/loop-slow_logs.pid -e loops -d'"
+      stop  program "/bin/bash -c 'cd /your/project/current && /usr/bin/bundle exec loops stop -p /your/project/shared/pids/loop-slow_logs.pid'"
+
+If you do not use bundler, you can do:
+
+    check process loop-slow_logs with pidfile /your/project/current/tmp/pids/loop-slow_logs.pid
+      group loops
       start program "/your/project/current/script/loops start slow_logs -e loops -p tmp/pids/loop-slow_logs.pid -d"
       stop  program "/your/project/current/script/loops stop  slow_logs -e loops -p tmp/pids/loop-slow_logs.pid"
-
 
 == ActiveMQ-based workers? What's that?
 
