@@ -163,6 +163,12 @@ module Loops
   def self.default_logger=(logger)
     @@default_logger = logger
   end
+
+  # Returns true if current process is started with loops CLI
+  #
+  def self.running?
+    Loops::CLI.running?
+  end
 end
 
 require File.join(Loops::LIB_ROOT, 'loops/autoload')

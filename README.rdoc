@@ -149,6 +149,7 @@ the loop class to execute:
 Now two independent sets of loops are using the same class <tt>SomeModule::MyWorkerLoop</tt>
 customized by the language parameter.
 
+
 == How to initialize the loop before workers run?
 
 You can run initialization code before starting loop workers by implementing the initialize_loop class method.  If
@@ -168,6 +169,17 @@ initialize_loop raises an error, then the loop is not started and the error is l
       end
     end
 
+
+== How do I detect if my code is running in a loop?
+
+We provide an api call <tt>Loops.running?</tt> that returns <tt>true</tt> if your code is running as a part of a loops process.
+For example, if you want your Rails.logger to write logs into your Loops logger (when you run it in a loop), you could do something
+like the following in your environment files:
+
+    # Switch logger to loops if we are in a loops process
+    config.logger = Loops.logger if Loops.running?
+
+
 == I want to keep my loop running on machine reboots. How to do it?
 
 We use monit to keep loop monitors runnings. You could use something like this in your configs:
@@ -183,6 +195,7 @@ If you do not use bundler, you can do:
       group loops
       start program "/your/project/current/script/loops start slow_logs -e loops -p tmp/pids/loop-slow_logs.pid -d"
       stop  program "/your/project/current/script/loops stop  slow_logs -e loops -p tmp/pids/loop-slow_logs.pid"
+
 
 == ActiveMQ-based workers? What's that?
 

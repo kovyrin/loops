@@ -13,10 +13,22 @@ module Loops
       end
 
       module ClassMethods
+        # We set this to true when a command is running
+        @@running = false
+
+        # Returns running status
+        #
+        def running?
+          @@running
+        end
+
         # Parse arguments, find and execute command requested.
         #
         def execute
+          @@running = true
           parse(ARGV).run!
+        ensure
+          @@running = false
         end
 
         # Register a Loops command.
