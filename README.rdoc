@@ -232,10 +232,12 @@ The default engine is <tt>fork</tt>.
 
 == What Ruby implementations does it work for?
 
-We've tested and used the plugin on MRI 1.8.6/1.8.7 and on JRuby 1.4.0. At this point we do
-not support demonization in JRuby and never tested the code on Ruby 1.9. Obviously because
-of JVM limitations you won't be able to use <tt>fork</tt> workers engine in JRuby, but
-threaded workers do pretty well.
+We've tested and used the plugin on MRI 1.8.6/1.8.7/1.9.3 and on JRuby 1.4.0. At this point we do
+not support demonization in JRuby. Obviously because of JVM limitations you won't be able to
+use <tt>fork</tt> workers engine in JRuby, but threaded workers do pretty well.
+
+We have a continuous integration server configured for the project: 
+{<img src="https://secure.travis-ci.org/kovyrin/loops.png?branch=master" alt="Build Status" />}[http://travis-ci.org/kovyrin/loops]
 
 Recommended version of ruby ro run loops is Ruby Enterprise Edition. This is because we
 have a support for their Copy-On-Write friendly garbage collector that makes your loops
