@@ -14,14 +14,15 @@ module Loops
   #
   # Usually it is initialized with framework's root dir (RAILS_ROOT or MERB_ROOT),
   # but you can specify another directory using command line arguments.
+  # Default: current directory.
   #
   # Loops current directory will is set to this value (chdir).
   #
-  # @return [Pathname, nil]
+  # @return [Pathname]
   #   the loops root directory.
   #
   def self.root
-    @@root
+    @@root ||= Pathname.new('').realpath
   end
 
   # Set loops root directory.
