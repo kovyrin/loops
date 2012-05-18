@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name         = 'loops'
   s.version      = Loops::VERSION
   s.platform     = Gem::Platform::RUBY
-  s.authors      = ['Alexey Kovyrin', 'Dmytro Shteflyuk']
+  s.authors      = [ 'Oleksiy Kovyrin', 'Dmytro Shteflyuk' ]
   s.email        = %q{alexey@kovyrin.net}
   s.homepage     = %q{http://github.com/kovyrin/loops}
   s.summary      = %q{Simple background loops framework for ruby}

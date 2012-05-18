@@ -76,11 +76,12 @@ Here is a simple loop scaffold for you to start from (put this file to
     end
 
 When you have your loop ready to use, add the following lines to your (maybe empty yet)
-<tt>config/loops.yml</tt> file:
+<tt>config/loops.yml</tt> file +loops+ section:
 
-    hello_world:
-      type: simple
-      sleep_period: 10
+    loops:
+      hello_world:
+        type: simple
+        sleep_period: 10
 
 This is it! To manage your loop, just run one of the following commands:
 
@@ -116,10 +117,11 @@ could use instead of your <tt>./script/loops<tt> binary:
 If you want to have more than one copy of your worker running, that is as simple as adding one
 option to your loop configuration:
 
-    hello_world:
-      type: simple
-      sleep_period: 10
-      workers_number: 1
+    loops:
+      hello_world:
+        type: simple
+        sleep_period: 10
+        workers_number: 1
 
 This <tt>workers_number</tt> option would tell loops manager to spawn more than one copy of
 your loop and run them in parallel. The only thing you'd need to do is to remember about
@@ -133,15 +135,16 @@ memcache-based locks.
 You can run the same loop class with different configuration parameters by explicitly identifying
 the loop class to execute:
 
-    hello:
-      type: simple
-      loop_name: some_module/my_worker
-      language: English
+    loops:
+      hello:
+        type: simple
+        loop_name: some_module/my_worker
+        language: English
 
-    salut:
-      type: simple
-      loop_name: some_module/my_worker
-      language: French
+      salut:
+        type: simple
+        loop_name: some_module/my_worker
+        language: French
 
 Now two independent sets of loops are using the same class <tt>SomeModule::MyWorkerLoop</tt>
 customized by the language parameter.
@@ -199,12 +202,13 @@ code and as the result, you can create a loops like this:
 
 With configs like this:
 
-    # An example of a STOMP queue-based loop
-    my_queue:
-      type: queue
-      host: 127.0.0.1
-      port: 61613
-      queue_name: blah
+    loops:
+      # An example of a STOMP queue-based loop
+      my_queue:
+        type: queue
+        host: 127.0.0.1
+        port: 61613
+        queue_name: blah
 
 Of course, this solution scales perfectly and to make your queue processing faster you just
 need to add more workers (by adding <tt>workers_number: N</tt> option).
