@@ -1,8 +1,15 @@
 # Contains information about currently used Loops version.
 #
 # @example
-#   puts "Loops #{Loops::VERSION}"
+#   puts "Loops #{Loops::Version::STRING}"
 #
 module Loops
-  VERSION = '2.0.7'
+  module Version
+    MAJOR = 2
+    MINOR = 0
+    PATCH = 8
+    BUILD = nil
+
+    STRING = [MAJOR, MINOR, PATCH, BUILD].compact.join('.')
+  end
 end

@@ -4,7 +4,7 @@ require 'loops/version'
 
 Gem::Specification.new do |s|
   s.name         = 'loops'
-  s.version      = Loops::VERSION
+  s.version      = Loops::Version::STRING
   s.platform     = Gem::Platform::RUBY
   s.authors      = [ 'Oleksiy Kovyrin', 'Dmytro Shteflyuk' ]
   s.email        = %q{alexey@kovyrin.net}
