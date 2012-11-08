@@ -142,6 +142,7 @@ class Loops::Base
     raise ArgumentError, "No block given!" unless block_given?
     loop do
       yield
+      return if shutdown?
       sleep(seconds.to_i)
     end
   end
