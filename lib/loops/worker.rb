@@ -2,13 +2,16 @@ module Loops
   class Worker
     attr_reader :name
     attr_reader :pid
+    attr_reader :pm
+    attr_reader :index
 
-    def initialize(name, pm, engine, &blk)
+    def initialize(name, pm, engine, index, &blk)
       raise ArgumentError, "Need a worker block!" unless block_given?
 
       @name = name
       @pm = pm
       @engine = engine
+      @index = index
       @worker_block = blk
     end
 
@@ -33,8 +36,8 @@ module Loops
           @pid = Process.pid
           normal_exit = false
           begin
-            $0 = "loop worker: #{@name}\0"
-            @worker_block.call
+            $0 = "loop worker: #{@name} ##{@index}\0"
+            @worker_block.call(self)
             normal_exit = true
             exit(0)
           rescue Exception => e
@@ -53,7 +56,7 @@ module Loops
         end
       elsif @engine == 'thread'
         @thread = Thread.start do
-          @worker_block.call
+          @worker_block.call(self)
         end
       else
         raise ArgumentError, "Invalid engine name: #{@engine}"

@@ -131,7 +131,7 @@ class Loops::Engine
         return
       end
 
-      loop_proc = Proc.new do
+      loop_proc = Proc.new do |worker|
         the_logger = begin
             if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
               # this is happening right after the fork, therefore no need for teardown at the end of the proc
@@ -157,7 +157,7 @@ class Loops::Engine
         end
 
         debug "Instantiating class: #{klass}"
-        the_loop = klass.new(@pm, name, config)
+        the_loop = klass.new(worker, name, config)
 
         debug "Starting the loop #{name}!"
         fix_ar_after_fork
@@ -170,12 +170,13 @@ class Loops::Engine
       # If the loop is in debug mode, no need to use all kinds of
       # process managers here
       if config['debug_loop']
-        loop_proc.call
+        worker = Loops::Worker.new(name, @pm, @global_config['workers_engine'], 0, &loop_proc)
+        loop_proc.call(worker)
       else
         # If wait_period is specified for the loop, update ProcessManager's
         # setting.
         @pm.update_wait_period(config['wait_period']) if config['wait_period']
-        @pm.start_workers(name, config['workers_number'] || 1) { loop_proc.call }
+        @pm.start_workers(name, config['workers_number'] || 1, &loop_proc)
       end
     end
 

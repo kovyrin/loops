@@ -20,8 +20,8 @@ module Loops
 
     def start_workers(number)
       logger.info("Creating #{number} workers for #{name} loop...")
-      number.times do
-        @workers << Worker.new(name, @pm, @engine, &@worker_block)
+      number.times do |index|
+        @workers << Worker.new(name, @pm, @engine, index, &@worker_block)
       end
     end
 

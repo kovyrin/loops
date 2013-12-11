@@ -41,15 +41,16 @@ class Loops::Base
 
   # Initializes a new instance of loop.
   #
-  # @param [ProcessManager] pm
-  #   the instance of process manager.
+  # @param [Worker] worker
+  #   the instance of worker.
   # @param [String] name
   #   the loop name.
   # @param [Hash<String, Object>]
   #   the loop configuration options from the config file.
   #
-  def initialize(pm, name, config)
-    @pm     = pm
+  def initialize(worker, name, config)
+    @worker = worker
+    @pm     = worker.pm
     @name   = name
     @config = config
   end
