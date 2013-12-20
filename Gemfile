@@ -3,4 +3,4 @@ source "http://rubygems.org"
 gemspec
 
 gem 'rake'
-gem 'activesupport'
+gem 'activesupport', '~> 3.2.15'

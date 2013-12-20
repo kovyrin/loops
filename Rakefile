@@ -1,14 +1,13 @@
-require 'rake'
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
 require 'rspec/core/rake_task'
 
-desc 'Default: run specs.'
-task :default => :spec
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec)
 
-desc 'Test the loops plugin.'
-RSpec::Core::RakeTask.new
+task :test => :spec
+task :default => :spec
 
 require 'yard'
 YARD::Rake::YardocTask.new(:yard) do |t|
