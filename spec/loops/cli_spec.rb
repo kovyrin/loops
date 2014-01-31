@@ -183,7 +183,7 @@ describe Loops::CLI do
       it 'should return an instance of command when everything is ok' do
         expect {
           @cli.find_command('star').should be_a(Loops::Commands::StartCommand)
-        }.to_not raise_error(Loops::InvalidCommandError)
+        }.to_not raise_error
       end
     end
   end
