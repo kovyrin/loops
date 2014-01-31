@@ -1,6 +1,0 @@
-- Integration tests (start loops process, stop, etc)
-- Test helpers (create_loop, run_loop) for easier testing of loops classes
-- Allow setting workers count in CLI (loops start hello -d -w 50)
-- Global loop options override (global.override in yaml config could contain options that would set/override loop-specific values)
-- Environment-specific configurations
-- Worker pool auto-scaling (min_workers/max_workers in config and a feedback link between the loop and the process manager that would allow the loop to control scaling)
