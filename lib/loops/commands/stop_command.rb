@@ -1,7 +1,12 @@
 class Loops::Commands::StopCommand < Loops::Command
   def execute
     STDOUT.sync = true
-    raise "No pid file or a stale pid file!" unless Loops::Daemonize.check_pid(Loops.pid_file)
+
+    unless Loops::Daemonize.check_pid(Loops.pid_file)
+      print "WARNING: No pid file or a stale pid file found! Exiting."
+      exit(0)
+    end
+
     pid = Loops::Daemonize.read_pid(Loops.pid_file)
     print "Killing the process: #{pid}: "
 
