@@ -9,3 +9,4 @@ spec/rails/tmp
 Gemfile.lock
 .rvmrc
 *.swp
+tags

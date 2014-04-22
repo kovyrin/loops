@@ -12,6 +12,7 @@ module Loops
   autoload :Logger,         __p('logger')
   autoload :ProcessManager, __p('process_manager')
   autoload :Queue,          __p('queue')
+  autoload :BunnyQueue,     __p('bunny_queue')
   autoload :Worker,         __p('worker')
   autoload :WorkerPool,     __p('worker_pool')
 
