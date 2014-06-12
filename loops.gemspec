@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description  = %q{Loops is a small and lightweight framework for Ruby on Rails, Merb and other ruby frameworks created to support simple background loops in your application which are usually used to do some background data processing on your servers (queue workers, batch tasks processors, etc).}
   s.rdoc_options = ['--charset=UTF-8']
 
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rspec', ' ~> 3.0.0'
   s.add_development_dependency 'yard'
 
   s.files            = `git ls-files`.split("\n")

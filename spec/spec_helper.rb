@@ -2,6 +2,23 @@ RAILS_ROOT = File.expand_path(File.join(File.dirname(__FILE__), 'rails'))
 
 require File.join(File.dirname(__FILE__), '..', 'lib', 'loops')
 
+RSpec.configure do |config|
+  # Mock Framework
+  config.mock_with :rspec
+
+  # Raise errors on rspec deprecations
+  config.raise_errors_for_deprecations!
+
+  # Enable old and new syntax for expectations and mocks
+  config.expect_with :rspec do |c|
+    c.syntax = [ :should, :expect ]
+  end
+  config.mock_with :rspec do |c|
+    c.syntax = [ :should, :expect ]
+  end
+end
+
+#---------------------------------------------------------------------------------------------------
 # Represents a lock object for a specific item.
 #
 # Usually you should use only {lock} and {unlock} methods to get

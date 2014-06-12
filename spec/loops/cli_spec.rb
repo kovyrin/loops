@@ -108,11 +108,11 @@ describe Loops::CLI do
       end
 
       it 'should load boot file' do
-        Object.const_defined?('RAILS_BOOT_LOADED').should be_true
+        Object.const_defined?('RAILS_BOOT_LOADED').should be(true)
       end
 
       it 'should load environment file' do
-        Object.const_defined?('RAILS_ENVIRONMENT_LOADED').should be_true
+        Object.const_defined?('RAILS_ENVIRONMENT_LOADED').should be(true)
       end
 
       it 'should inialize default logger' do

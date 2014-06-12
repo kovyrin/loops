@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Loops::Base, '#with_lock' do
   before :each do
-    @logger = mock('Logger').as_null_object
+    @logger = double('Logger').as_null_object
     @loop = Loops::Base.new(@logger, 'simple', {})
   end
 
@@ -11,9 +11,9 @@ describe Loops::Base, '#with_lock' do
       called = false
       @loop.with_lock(1, 'rspec', 60) do
         called = true
-        LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_true
+        LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(true)
       end
-      called.should be_true
+      called.should be(true)
     end
 
     it 'should release lock on an item' do
@@ -21,8 +21,8 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_false
-      called.should be_true
+      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
+      called.should be(true)
     end
 
     it 'should release lock on an item in case of error' do
@@ -33,19 +33,19 @@ describe Loops::Base, '#with_lock' do
           raise 'ouch'
         end
       }.to raise_error('ouch')
-      called.should be_true
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_false
+      called.should be(true)
+      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
     end
 
     it 'should pass the lock timeout' do
       called = false
       @loop.with_lock(1, 'rspec', 0.2) do
         called = true
-        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be_false
+        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be(false)
         sleep(0.2)
-        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be_true
+        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be(true)
       end
-      called.should be_true
+      called.should be(true)
     end
 
     it 'should release the lock on an item' do
@@ -53,8 +53,8 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      called.should be_true
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_false
+      called.should be(true)
+      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
     end
 
     it 'should yield with entity_id value if block accepts the argument' do
@@ -63,7 +63,7 @@ describe Loops::Base, '#with_lock' do
         called = true
         entity_id.should == 1
       end
-      called.should be_true
+      called.should be(true)
     end
   end
 
@@ -77,7 +77,7 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      called.should be_false
+      called.should be(false)
     end
 
     it 'should should not touch the lock object' do
@@ -85,8 +85,8 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be_true
-      called.should be_false
+      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(true)
+      called.should be(false)
     end
   end
 end

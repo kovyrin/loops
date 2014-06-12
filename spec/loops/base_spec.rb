@@ -3,7 +3,7 @@ require 'active_support/core_ext/numeric/time'
 
 describe Loops::Base do
   before :each do
-    @logger = mock('Logger').as_null_object
+    @logger = double('Logger').as_null_object
     @loop = Loops::Base.new(@logger, 'simple', {})
   end
 
