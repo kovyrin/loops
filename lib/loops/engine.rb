@@ -214,7 +214,8 @@ class Loops::Engine
         elsif Object.const_defined?('Rails')
           Rails.application.config.allow_concurrency = true
         end
-        ActiveRecord::Base.clear_active_connections!
+
+        ActiveRecord::Base.clear_all_connections!
         if ActiveRecord::VERSION::MAJOR >= 4
           ActiveRecord::Base.connection_pool.connections.map(&:verify!)
         else
