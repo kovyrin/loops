@@ -87,8 +87,8 @@ class Loops::Base
   #
   # Override this method if your loop depends on any external
   # libraries, resources, etc. Verify your dependencies here,
-  # and raise an exception in case of any trouble to disallow
-  # this loop to start.
+  # and raise an exception in case of any trouble to prevent
+  # this loop from starting.
   #
   # @example
   #   def self.check_dependencies
@@ -106,7 +106,7 @@ class Loops::Base
 
   # Proxy logger calls to our logger
   [ :debug, :info, :warn, :error, :fatal ].each do |meth_name|
-    class_eval <<-EVAL, __FILE__, __LINE__
+    class_eval <<-EVAL, __FILE__, __LINE__ + 1
       def #{meth_name}(message)
         logger.#{meth_name}("loop[\#{name}/\#{Process.pid}]: \#{message}")
       end
@@ -143,7 +143,10 @@ class Loops::Base
     raise ArgumentError, "No block given!" unless block_given?
     loop do
       yield
-      return if shutdown?
+      if shutdown?
+        debug("Shutdown: stopping the loop")
+        break
+      end
       sleep(seconds.to_i)
     end
   end

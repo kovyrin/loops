@@ -76,7 +76,7 @@ class Loops::Engine
 
     # Proxy logger calls to the default loops logger
     [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
-      class_eval <<-EVAL, __FILE__, __LINE__
+      class_eval <<-EVAL, __FILE__, __LINE__ + 1
         def #{meth_name}(message)
           Loops.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
         end
