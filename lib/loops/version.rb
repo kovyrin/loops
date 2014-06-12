@@ -6,10 +6,10 @@
 module Loops
   module Version
     MAJOR = 2
-    MINOR = 0
-    PATCH = 9
-    BUILD = nil
+    MINOR = 1
+    PATCH = 0
+    BUILD = 'dev'
 
-    STRING = [MAJOR, MINOR, PATCH, BUILD].compact.join('.')
+    STRING = [ MAJOR, MINOR, PATCH, BUILD ].compact.join('.')
   end
 end
