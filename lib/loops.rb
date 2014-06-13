@@ -3,6 +3,7 @@ require 'erb'
 require 'pathname'
 
 module Loops
+
   # @return [String]
   #   a full path to the loops "lib" directory.
   LIB_ROOT = File.expand_path(File.dirname(__FILE__)) unless const_defined?('LIB_ROOT')

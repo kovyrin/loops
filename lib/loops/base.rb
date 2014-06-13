@@ -30,7 +30,11 @@
 #     end
 #   end
 #
+require 'loops/base_concerns/config_option'
+
 class Loops::Base
+  include Loops::BaseConcerns::ConfigOption
+
   # @return [String]
   #   loop name.
   attr_reader :name
@@ -50,6 +54,8 @@ class Loops::Base
   #
   def initialize(worker, name, config)
     @worker = worker
+    raise ArgumentError, "Invalid worker argument value!" unless worker
+
     @pm     = worker.pm
     @name   = name
     @config = config

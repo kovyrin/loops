@@ -39,26 +39,7 @@ Add the loops gem to your +Gemfile+:
 
     gem 'loops'
 
-And then run +bundle+ command.
-
-To install loops as a Rails plugin you need to do the following:
-
-    ./script/plugin install git://github.com/kovyrin/loops.git
-
-This will install the whole package in your +vendor/plugins+ directory.
-For merb applications, just check out the code and place it to the +vendor/plugins+ directory.
-
-After you are done with the installation, you need to generate binary and configuration
-files by running:
-
-    ./script/generate loops
-
-This will create the following list of files:
-* <tt>./script/loops</tt> -- binary file that will be used to manage your loops
-* <tt>./config/loops.yml</tt> -- example configuration file
-* <tt>./app/loops/simple.rb</tt> -- REALLY simple loop example
-* <tt>./app/loops/queue_loop.rb</tt> -- simple ActiveMQ queue worker
-
+And then run the +bundle+ command to installe the gem.
 
 == How to use?
 
@@ -66,16 +47,18 @@ Here is a simple loop scaffold for you to start from (put this file to
 <tt>app/loops/hello_world_loop.rb</tt>):
 
     class HelloWorldLoop < Loops::Base
+      config_option :period, :kind_of => Integer, :default => 30
+
       def run
-        with_period_of(1) do # period is in seconds
+        with_period_of(period) do # period is in seconds, read from config file
           debug("Hello, debug log!")
-          sleep(config['sleep_period']) # Do something "useful" and make it configurable
+          sleep(1) # Do something "useful" here
           debug("Hello, debug log (yes, once again)!")
         end
       end
     end
 
-When you have your loop ready to use, add the following lines to your (maybe empty yet)
+When you have your loop ready to use, add the following lines to your (maybe empty still)
 <tt>config/loops.yml</tt> file +loops+ section:
 
     loops:
@@ -156,14 +139,17 @@ You can run initialization code before starting loop workers by implementing the
 initialize_loop raises an error, then the loop is not started and the error is logged.
 
     class HelloWorldLoop < Loops::Base
+      config_option :dependency_file, :required => true
+      config_option :sleep_period, :kind_of => Integer, :default => 5
+
       def self.initialize_loop(config)
-        raise "Missing required dependency" unless File.exist?(config['my_dependency'])
+        raise "Missing required dependency" unless File.exist?(dependency_file)
       end
 
       def run
         with_period_of(1) do # period is in seconds
           debug("Hello, debug log!")
-          sleep(config['sleep_period']) # Do something "useful" and make it configurable
+          sleep(sleep_period) # Do something "useful" and make it configurable
           debug("Hello, debug log (yes, once again)!")
         end
       end
