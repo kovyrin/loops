@@ -7,9 +7,12 @@ module Loops
       extend ActiveSupport::Concern
 
       # Backend for configuration options accessor methods
-      def read_config_option(name, options = {})
+      def read_config_option(name)
+        @config_options ||= {}
+
         # Read config value
-        config_value = config[name]
+        name = name.to_s
+        config_value = @config_options[name]
 
         unless config.has_key?(name)
           raise Exceptions::OptionNotFound, "Could not find option '#{name}'!" if options[:required]
@@ -55,9 +58,13 @@ module Loops
         # Declares a configuration option expected by the loop
         def config_option(name, options = {})
           name = name.to_s
+
+          @config_options ||= {}
+          @config_options[name] = options
+
           class_eval <<-EVAL, __FILE__, __LINE__ + 1
             def #{name}
-              read_config_option(#{name.inspect}, #{options.inspect})
+              read_config_option(#{name.inspect})
             end
           EVAL
         end
