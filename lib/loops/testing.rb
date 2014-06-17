@@ -20,7 +20,9 @@ module Loops
 
     included do
       let(:loops_logger) { Logger.new(STDOUT) }
-      let(:loops_process_manager) { double("Loops::ProcessManager", :logger => loops_logger) }
+      let(:loops_process_manager) do
+        double("Loops::ProcessManager", :logger => loops_logger, :shutdown? => false)
+      end
     end
 
     # Creates a loop class object with given configuration

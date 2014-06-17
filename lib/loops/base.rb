@@ -102,14 +102,16 @@ class Loops::Base
   #   end
   #
   def self.check_dependencies
+    # Nothing to do, override if needed
   end
 
   # A loop entry point. Should be overridden in descendants.
   #
   def run
-    raise 'Generic loop has nothing to do'
+    raise NotImplementedError, 'Generic loop has nothing to do'
   end
 
+  #-------------------------------------------------------------------------------------------------
   # Proxy logger calls to our logger
   [ :debug, :info, :warn, :error, :fatal ].each do |meth_name|
     class_eval <<-EVAL, __FILE__, __LINE__ + 1
@@ -119,6 +121,7 @@ class Loops::Base
     EVAL
   end
 
+  #-------------------------------------------------------------------------------------------------
   def with_lock(entity_ids, loop_id, timeout, entity_name = '', &block)
     entity_name = 'item' if entity_name.to_s.empty?
     entity_ids = [entity_ids] unless Array === entity_ids
@@ -145,15 +148,39 @@ class Loops::Base
     end
   end
 
+  #-------------------------------------------------------------------------------------------------
+  # Runs a specified block in a loop, sleeping for +seconds+ seconds between iterations
   def with_period_of(seconds)
     raise ArgumentError, "No block given!" unless block_given?
+    seconds = seconds.to_i
+
+    # Main loop, does not stop until the loop enters the shutdown mode
     loop do
+      # Run user's code
       yield
+
+      # Stop if we're in shutdown mode
       if shutdown?
         debug("Shutdown: stopping the loop")
         break
       end
-      sleep(seconds.to_i)
+
+      # Sleep before the next iteration
+      sleep_with_shutdown_support(seconds)
+    end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # Sleeps for +seconds+ seconds or until the loop enters the shutdown mode
+  def sleep_with_shutdown_support(seconds)
+    debug("Sleeping for #{seconds}...")
+    start_time = Time.now.to_f
+
+    # Wait until it is time to stop
+    while Time.now.to_f - start_time < seconds
+      # Stop if we're in shutdown mode
+      break if shutdown?
+      sleep(1)
     end
   end
 end
