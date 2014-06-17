@@ -8,14 +8,16 @@ module Loops
 
       # Backend for configuration options accessor methods
       def read_config_option(name)
-        @config_options ||= {}
+        options = self.class.loops_config_options[name] || {}
 
         # Read config value
         name = name.to_s
-        config_value = @config_options[name]
+        config_value = config[name]
 
         unless config.has_key?(name)
-          raise Exceptions::OptionNotFound, "Could not find option '#{name}'!" if options[:required]
+          if options[:required]
+            raise Loops::Exceptions::OptionNotFound, "Could not find option '#{name}'!"
+          end
           config_value = options[:default] if options[:default]
         end
 
@@ -46,7 +48,7 @@ module Loops
           return value.to_s if dest_class == String
         rescue => e
           error = "Failed to convert option '#{name}' value #{value.inspect} to #{dest_class}: #{e}"
-          raise Exceptions::TypeError, error
+          raise Loops::Exceptions::TypeError, error
         end
 
         # Ok, no idea how to deal with this shit
@@ -55,6 +57,11 @@ module Loops
 
       #---------------------------------------------------------------------------------------------
       module ClassMethods
+        # Returns configuration option validation params defined by the user
+        def loops_config_options
+          @config_options || {}
+        end
+
         # Declares a configuration option expected by the loop
         def config_option(name, options = {})
           name = name.to_s
