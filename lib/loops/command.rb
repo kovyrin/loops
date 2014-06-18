@@ -14,7 +14,7 @@ class Loops::Command
 
   # Invoke a command.
   #
-  # Initiaizes {#engine} and {#options} variables and
+  # Initializes {#engine} and {#options} variables and
   # executes a command.
   #
   def invoke(engine, options)
@@ -25,9 +25,8 @@ class Loops::Command
   end
 
   # A command entry point. Should be overridden in descendants.
-  #
   def execute
-    raise 'Generic command has no actions'
+    raise NotImplementedError, 'Generic command has no actions'
   end
 
   # Gets a value indicating whether command needs to bootstrap framework.
@@ -36,6 +35,11 @@ class Loops::Command
   end
 end
 
-# All Loops command registered.
+#---------------------------------------------------------------------------------------------------
+# Container module for all commands
 module Loops::Commands
 end
+
+# Load all command classes
+commands_dir = File.join(File.dirname(__FILE__), 'commands')
+Dir["#{commands_dir}/*_command.rb"].each { |f| require f }
