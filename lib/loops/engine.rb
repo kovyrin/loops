@@ -30,14 +30,20 @@ class Loops::Engine
     @pm = Loops::ProcessManager.new(global_config, Loops.logger)
 
     # Start all loops
-    loops_config.each do |name, config|
-      next if config['disabled']
+    loops_config.each do |name, loop_config|
+      # Do not load the loop if it is disabled
+      next if loop_config['disabled']
+      next if loop_config.has_key?('enabled') && !loop_config['enabled']
+
+      # Skip the loop if we were given a specific list of loops and this one wasn't on the list
       next unless loops_to_start.empty? || loops_to_start.member?(name)
 
-      klass = load_loop_class(name, config)
+      # Load the class
+      klass = load_loop_class(name, loop_config)
       next unless klass
 
-      start_loop(name, klass, config)
+      # Start the loop
+      start_loop(name, klass, loop_config)
       @running_loops << name
     end
 
