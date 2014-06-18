@@ -61,7 +61,7 @@ module Loops
             options[:daemonize] = true
           end
 
-          opt.on('-e', '--environment=env', 'Set RAILS_ENV (MERB_ENV) value') do |env|
+          opt.on('-e', '--environment=env', 'Set LOOPS_ENV/RAILS_ENV/MERB_ENV value') do |env|
             options[:environment] = env
           end
 
@@ -104,7 +104,7 @@ module Loops
         @options = {
           :daemonize   => false,
           :config_file => 'config/loops.yml',
-          :environment => nil,
+          :environment => 'development',
           :framework   => 'rails',
           :loops_root  => 'app/loops',
           :pid_file    => nil,
@@ -196,6 +196,16 @@ module Loops
         options[:root] = current_dir
       end
 
+      #---------------------------------------------------------------------------------------------
+      # Detect current environment name or use the default development environment
+      #
+      # @return [String] environment name
+      #
+      def guess_environment_name(opt_environment = nil)
+        opt_environment || ENV['LOOPS_ENV'] || ENV['RAILS_ENV'] || ENV['MERB_ENV'] || 'development'
+      end
+
+      #---------------------------------------------------------------------------------------------
       # Application bootstrap.
       #
       # Checks framework option passed and load application
@@ -209,15 +219,23 @@ module Loops
       #   occurred when unknown framework option value passed.
       #
       def bootstrap!
-        loops_env = ENV['LOOPS_ENV'] = options[:environment] if options[:environment]
+        # Guess the environment name
+        environment_name = guess_environment_name(options.delete(:environment))
 
+        # Set loop environment name
+        Loops.environment = ENV['LOOPS_ENV'] = environment_name
+
+        # Load _require_ dependencies
         options[:require].each do |library|
           require library
         end
 
-        case options[:framework]
+        # Bootstrap the requested framework
+        framework = options.delete(:framework)
+        case framework
           when 'rails'
-            ENV['RAILS_ENV'] = loops_env
+            # Set rails environment name
+            ENV['RAILS_ENV'] = Loops.environment
 
             # Bootstrap Rails
             require Loops.root + 'config/boot'
@@ -225,24 +243,26 @@ module Loops
 
             # Loops default logger
             Loops.default_logger = Rails.logger
+
           when 'merb'
             require 'merb-core'
 
-            ENV['MERB_ENV'] = loops_env
+            # Set merb environment name
+            ENV['MERB_ENV'] = Loops.environment
 
             # Bootstrap Merb
-            Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'] || 'development')
+            Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'])
 
             # Loops default logger
             Loops.default_logger = Merb.logger
-          when 'none' then
+
+          when 'none'
             # Plain ruby loops
-            Loops.default_logger = Loops::Logger.new($stdout)
+            Loops.default_logger = Loops::Logger.new(STDOUT)
+
           else
             raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
-        options.delete(:environment)
-        options.delete(:framework)
       end
 
       # Initializes a loops engine instance.

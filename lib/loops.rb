@@ -11,6 +11,26 @@ module Loops
   #   a full path to the loops binary file.
   BINARY   = File.expand_path(File.join(LIB_ROOT, '../bin/loops')) unless const_defined?('BINARY')
 
+  # Get the environment the process is running in
+  #
+  # @return [String] environment name
+  #
+  def self.environment
+    @environment || 'development'
+  end
+
+  # Set the environment fname or the current loops process
+  #
+  # This is internal method used to set the environment name.
+  #
+  # @param [String] environment name
+  #
+  # @private
+  #
+  def self.environment=(environment)
+    @environment = environment
+  end
+
   # Loops root directory.
   #
   # Usually it is initialized with framework's root dir (RAILS_ROOT or MERB_ROOT),

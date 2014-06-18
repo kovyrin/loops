@@ -119,10 +119,10 @@ describe Loops::CLI do
         Loops.default_logger.should == 'rails default logger'
       end
 
-      it 'should not have LOOPS_ENV envionment variable by default' do
+      it 'should set LOOPS_ENV and RAILS_ENV envionment variables' do
         Loops::CLI.parse(@args)
-        ENV['LOOPS_ENV'].should be_nil
-        ENV['RAILS_ENV'].should be_nil
+        ENV['LOOPS_ENV'].should == 'development'
+        ENV['RAILS_ENV'].should == 'development'
       end
     end
 
