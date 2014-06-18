@@ -1,10 +1,12 @@
 require "active_support/concern"
-require "active_support/core_ext/string/inflections"
+require "active_support/core_ext/string"
+require "active_support/core_ext/hash"
 
 module Loops
   module Testing
     extend ActiveSupport::Concern
 
+    # Dumb worker stub
     class Worker
       attr_reader :name, :pm
 
@@ -14,29 +16,44 @@ module Loops
       end
     end
 
-    def self.enable(spec_config)
-      spec_config.include(Loops::Testing)
-    end
+    #-----------------------------------------------------------------------------------------------
+    module LoopsExampleGroup
+      extend ActiveSupport::Concern
 
-    included do
-      let(:loops_logger) { Logger.new(STDOUT) }
-      let(:loops_process_manager) do
-        double("Loops::ProcessManager", :logger => loops_logger, :shutdown? => false)
+      # Creates a loop class object with given configuration
+      def create_loop(loop_class, config = {})
+        loop_name = loop_name_from_class(loop_class)
+
+        worker = Loops::Testing::Worker.new(loop_name, loops_process_manager)
+        loop_class.new(worker, loop_name, config)
+      end
+
+      # Converts a class name or a class to a loop name
+      def loop_name_from_class(loop_class)
+        loop_class.to_s.gsub(/Loop$/, '').underscore
+      end
+
+      included do
+        let(:loop_config) { {}.with_indifferent_access }
+        let(:loops_logger) { Logger.new(STDOUT) }
+        let(:loops_process_manager) do
+          double("Loops::ProcessManager", :logger => loops_logger, :shutdown? => false)
+        end
+
+        # Define the subject if possible
+        if described_class.ancestors.include?(Loops::Base)
+          subject { create_loop(described_class, loop_config) }
+        end
       end
     end
 
-    # Creates a loop class object with given configuration
-    def create_loop(loop_class, config = {})
-      loop_name = loop_name_from_class(loop_class)
-
-      worker = Loops::Testing::Worker.new(loop_name, loops_process_manager)
-      loop_class.new(worker, loop_name, config)
+    #-----------------------------------------------------------------------------------------------
+    # Enable loops example group
+    RSpec.configure do |config|
+      config.include(LoopsExampleGroup, :type => :loops)
+      config.define_derived_metadata(:file_path => %r{/spec/loops/}) do |metadata|
+        metadata[:type] = :loops
+      end
     end
-
-    # Converts a class name or a class to a loop name
-    def loop_name_from_class(loop_class)
-      loop_class.to_s.gsub(/Loop$/, '').underscore
-    end
-
   end
 end

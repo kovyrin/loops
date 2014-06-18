@@ -13,9 +13,6 @@ require File.join(PROJECT_ROOT, 'lib', 'loops', 'testing')
 Dir["#{SPEC_ROOT}/support/**/*.rb"].each { |f| require(f) }
 
 RSpec.configure do |config|
-  # Enable loops testing
-  Loops::Testing.enable(config)
-
   # Mock Framework
   config.mock_with :rspec
 
