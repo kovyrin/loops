@@ -50,9 +50,17 @@ module Loops
     #-----------------------------------------------------------------------------------------------
     # Enable loops example group
     RSpec.configure do |config|
-      config.include(LoopsExampleGroup, :type => :loops)
-      config.define_derived_metadata(:file_path => %r{/spec/loops/}) do |metadata|
-        metadata[:type] = :loops
+      if config.respond_to?(:define_derived_metadata)
+        config.include(LoopsExampleGroup, :type => :loops)
+        config.define_derived_metadata(:file_path => %r{/spec/loops/}) do |metadata|
+          metadata[:type] = :loops
+        end
+      else
+        config.include(
+          LoopsExampleGroup,
+          :type => :loops,
+          :example_group => { :file_path => %r{/spec/loops/} }
+        )
       end
     end
   end
