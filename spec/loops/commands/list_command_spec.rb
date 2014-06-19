@@ -5,19 +5,19 @@ describe Loops::Commands::ListCommand do
 
   context "(private) is_disabled? method" do
     it "should return true if the loop is disabled in config" do
-      command.send(:is_disabled?, { :disabled => true }).should be(true)
+      expect(command.send(:is_disabled?, { :disabled => true })).to be(true)
     end
 
     it "should return true if the loop config contains enabled = false" do
-      command.send(:is_disabled?, { :enabled => false }).should be(true)
+      expect(command.send(:is_disabled?, { :enabled => false })).to be(true)
     end
 
     it "should return true if the loop contains disabled = true and enabled = true" do
-      command.send(:is_disabled?, { :enabled => true, :disabled => true }).should be(true)
+      expect(command.send(:is_disabled?, { :enabled => true, :disabled => true })).to be(true)
     end
 
     it "should return false if the loop config does not specify status" do
-      command.send(:is_disabled?, {}).should be(false)
+      expect(command.send(:is_disabled?, {})).to be(false)
     end
   end
 
@@ -32,7 +32,7 @@ describe Loops::Commands::ListCommand do
         :fucked   => { :workers_number => 3, :disabled => true, :enabled => true }
       }
 
-      engine.stub(:loops_config).and_return(config)
+      allow(engine).to receive(:loops_config).and_return(config)
     end
 
     it "should successfully print a list of loops" do

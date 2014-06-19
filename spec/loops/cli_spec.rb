@@ -6,11 +6,11 @@ describe Loops::CLI do
   end
 
   it 'should include Loops::CLI::Options' do
-    Loops::CLI.included_modules.should include(Loops::CLI::Options)
+    expect(Loops::CLI.included_modules).to include(Loops::CLI::Options)
   end
 
   it 'should include Loops::CLI::Commands' do
-    Loops::CLI.included_modules.should include(Loops::CLI::Commands)
+    expect(Loops::CLI.included_modules).to include(Loops::CLI::Commands)
   end
 
   describe 'with Loops::CLI::Options included' do
@@ -25,63 +25,63 @@ describe Loops::CLI do
 
       it 'should detect root directory' do
         Loops::CLI.parse(@args)
-        Loops.root.should == Pathname.new(RAILS_ROOT).realpath
+        expect(Loops.root).to eq(Pathname.new(RAILS_ROOT).realpath)
       end
 
       it 'should chdir to the root directory' do
         Loops::CLI.parse(@args)
-        Dir.pwd.should == Pathname.new(RAILS_ROOT).realpath.to_s
+        expect(Dir.pwd).to eq(Pathname.new(RAILS_ROOT).realpath.to_s)
       end
 
       it 'should load config from config/loops.yml by default' do
         cli = Loops::CLI.parse(@args)
-        cli.engine.global_config['pid_file'].should == '/var/run/superloops.pid'
+        expect(cli.engine.global_config['pid_file']).to eq('/var/run/superloops.pid')
       end
 
       it 'should load config from file specified' do
         cli = Loops::CLI.parse(@args << '-c' << 'config.yml')
-        cli.engine.global_config['pid_file'].should == 'tmp/pids/loops.pid'
+        expect(cli.engine.global_config['pid_file']).to eq('tmp/pids/loops.pid')
       end
 
       it 'should initialize use app/loops as a root directory for loops by default' do
         Loops::CLI.parse(@args)
-        Loops.loops_root.should == Pathname.new(RAILS_ROOT + '/app/loops').realpath
+        expect(Loops.loops_root).to eq(Pathname.new(RAILS_ROOT + '/app/loops').realpath)
       end
 
       it 'should use specified root directory for loops' do
         Loops::CLI.parse(@args << '-l' << '.')
-        Loops.loops_root.should == Pathname.new(RAILS_ROOT).realpath
+        expect(Loops.loops_root).to eq(Pathname.new(RAILS_ROOT).realpath)
       end
 
       it 'should use pid file from global config section' do
         Loops::CLI.parse(@args)
-        Loops.pid_file.should == Pathname.new('/var/run/superloops.pid')
+        expect(Loops.pid_file).to eq(Pathname.new('/var/run/superloops.pid'))
       end
 
       it 'should absolutize relative pid file path' do
         Loops::CLI.parse(@args << '-c' << 'config.yml')
-        Loops.pid_file.should == Pathname.new(RAILS_ROOT).realpath + 'tmp/pids/loops.pid'
+        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath + 'tmp/pids/loops.pid')
       end
 
       it 'should accept pid file from arguments' do
         Loops::CLI.parse(@args << '-p' << 'superloop.pid')
-        Loops.pid_file.should == Pathname.new(RAILS_ROOT).realpath + 'superloop.pid'
+        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath + 'superloop.pid')
       end
 
       it 'should extract command when passed' do
         cli = Loops::CLI.parse(@args)
-        cli.options[:command].should == 'list'
+        expect(cli.options[:command]).to eq('list')
       end
 
       it 'should extract command arguments when passed' do
         cli = Loops::CLI.parse(@args << 'arg1' << 'arg2')
-        cli.options[:command].should eq('list')
-        cli.options[:args].should eq(%w[arg1 arg2])
+        expect(cli.options[:command]).to eq('list')
+        expect(cli.options[:args]).to eq(%w[arg1 arg2])
       end
 
       it 'should remove all unnecessary options' do
         cli = Loops::CLI.parse(@args << '-r' << RAILS_ROOT << '-p' << 'loop.pid' << '-c' << 'config.yml' << '-l' << '.' << '-d')
-        cli.options.keys.map(&:to_s).sort.should == %w(command args daemonize require).sort
+        expect(cli.options.keys.map(&:to_s).sort).to eq(%w(command args daemonize require).sort)
       end
     end
 
@@ -92,12 +92,12 @@ describe Loops::CLI do
 
       it 'should detect root directory' do
         Loops::CLI.parse(@args)
-        Loops.root.should == Pathname.new(RAILS_ROOT).realpath
+        expect(Loops.root).to eq(Pathname.new(RAILS_ROOT).realpath)
       end
 
       it 'should chdir to the root directory' do
         Loops::CLI.parse(@args)
-        Dir.pwd.should == Pathname.new(RAILS_ROOT).realpath.to_s
+        expect(Dir.pwd).to eq(Pathname.new(RAILS_ROOT).realpath.to_s)
       end
     end
 
@@ -108,21 +108,21 @@ describe Loops::CLI do
       end
 
       it 'should load boot file' do
-        Object.const_defined?('RAILS_BOOT_LOADED').should be(true)
+        expect(Object.const_defined?('RAILS_BOOT_LOADED')).to be(true)
       end
 
       it 'should load environment file' do
-        Object.const_defined?('RAILS_ENVIRONMENT_LOADED').should be(true)
+        expect(Object.const_defined?('RAILS_ENVIRONMENT_LOADED')).to be(true)
       end
 
       it 'should inialize default logger' do
-        Loops.default_logger.should == 'rails default logger'
+        expect(Loops.default_logger).to eq('rails default logger')
       end
 
       it 'should set LOOPS_ENV and RAILS_ENV envionment variables' do
         Loops::CLI.parse(@args)
-        ENV['LOOPS_ENV'].should == 'development'
-        ENV['RAILS_ENV'].should == 'development'
+        expect(ENV['LOOPS_ENV']).to eq('development')
+        expect(ENV['RAILS_ENV']).to eq('development')
       end
     end
 
@@ -133,20 +133,20 @@ describe Loops::CLI do
 
       it 'should set LOOPS_ENV environment variable' do
         Loops::CLI.parse(@args)
-        ENV['LOOPS_ENV'].should == 'production'
+        expect(ENV['LOOPS_ENV']).to eq('production')
       end
 
       it 'should set RAILS_ENV environment variable for Rails framework' do
         @args = [ 'start', 'test', '-r', File.dirname(__FILE__) + '/../rails', '-e', 'production' ]
         Loops::CLI.parse(@args)
-        ENV['LOOPS_ENV'].should eq('production')
-        ENV['RAILS_ENV'].should eq('production')
+        expect(ENV['LOOPS_ENV']).to eq('production')
+        expect(ENV['RAILS_ENV']).to eq('production')
       end
 
       it 'should set LOOPS_ENV before require files throut -R' do
         @args << '-R' << File.dirname(__FILE__) + '/../rails/config/init'
         Loops::CLI.parse(@args)
-        ::CURRENT_LOOPS_ENV.should == 'production'
+        expect(::CURRENT_LOOPS_ENV).to eq('production')
       end
     end
   end
@@ -159,11 +159,11 @@ describe Loops::CLI do
 
     describe 'in #find_command_possibilities' do
       it 'should return a list of possible commands' do
-        @cli.find_command_possibilities('s').sort.should   eq(%w(start stats stop))
-        @cli.find_command_possibilities('sta').sort.should eq(%w(start stats))
-        @cli.find_command_possibilities('star').should     eq(%w(start))
-        @cli.find_command_possibilities('l').should        eq(%w(list))
-        @cli.find_command_possibilities('o').should        eq([])
+        expect(@cli.find_command_possibilities('s').sort).to   eq(%w(start stats stop))
+        expect(@cli.find_command_possibilities('sta').sort).to eq(%w(start stats))
+        expect(@cli.find_command_possibilities('star')).to     eq(%w(start))
+        expect(@cli.find_command_possibilities('l')).to        eq(%w(list))
+        expect(@cli.find_command_possibilities('o')).to        eq([])
       end
     end
 
@@ -182,7 +182,7 @@ describe Loops::CLI do
 
       it 'should return an instance of command when everything is ok' do
         expect {
-          @cli.find_command('star').should be_a(Loops::Commands::StartCommand)
+          expect(@cli.find_command('star')).to be_a(Loops::Commands::StartCommand)
         }.to_not raise_error
       end
     end

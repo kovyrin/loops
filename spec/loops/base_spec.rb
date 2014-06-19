@@ -18,7 +18,7 @@ describe Loops::Base do
           break if test_iterations > 0
           test_iterations += 1
         end
-        test_iterations.should == 1
+        expect(test_iterations).to eq(1)
       end
     end
   end

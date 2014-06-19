@@ -11,9 +11,9 @@ describe Loops::Base, '#with_lock' do
       called = false
       @loop.with_lock(1, 'rspec', 60) do
         called = true
-        LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(true)
+        expect(LoopLock.locked?(:loop => 'rspec', :entity_id => 1)).to be(true)
       end
-      called.should be(true)
+      expect(called).to be(true)
     end
 
     it 'should release lock on an item' do
@@ -21,8 +21,8 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
-      called.should be(true)
+      expect(LoopLock.locked?(:loop => 'rspec', :entity_id => 1)).to be(false)
+      expect(called).to be(true)
     end
 
     it 'should release lock on an item in case of error' do
@@ -33,19 +33,19 @@ describe Loops::Base, '#with_lock' do
           raise 'ouch'
         end
       }.to raise_error('ouch')
-      called.should be(true)
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
+      expect(called).to be(true)
+      expect(LoopLock.locked?(:loop => 'rspec', :entity_id => 1)).to be(false)
     end
 
     it 'should pass the lock timeout' do
       called = false
       @loop.with_lock(1, 'rspec', 0.2) do
         called = true
-        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be(false)
+        expect(LoopLock.lock(:loop => 'rspec', :entity_id => 1)).to be(false)
         sleep(0.2)
-        LoopLock.lock(:loop => 'rspec', :entity_id => 1).should be(true)
+        expect(LoopLock.lock(:loop => 'rspec', :entity_id => 1)).to be(true)
       end
-      called.should be(true)
+      expect(called).to be(true)
     end
 
     it 'should release the lock on an item' do
@@ -53,17 +53,17 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      called.should be(true)
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(false)
+      expect(called).to be(true)
+      expect(LoopLock.locked?(:loop => 'rspec', :entity_id => 1)).to be(false)
     end
 
     it 'should yield with entity_id value if block accepts the argument' do
       called = false
       @loop.with_lock(1, 'rspec', 60) do |entity_id|
         called = true
-        entity_id.should == 1
+        expect(entity_id).to eq(1)
       end
-      called.should be(true)
+      expect(called).to be(true)
     end
   end
 
@@ -77,7 +77,7 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      called.should be(false)
+      expect(called).to be(false)
     end
 
     it 'should should not touch the lock object' do
@@ -85,8 +85,8 @@ describe Loops::Base, '#with_lock' do
       @loop.with_lock(1, 'rspec', 60) do
         called = true
       end
-      LoopLock.locked?(:loop => 'rspec', :entity_id => 1).should be(true)
-      called.should be(false)
+      expect(LoopLock.locked?(:loop => 'rspec', :entity_id => 1)).to be(true)
+      expect(called).to be(false)
     end
   end
 end

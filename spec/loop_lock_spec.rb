@@ -8,7 +8,7 @@ describe LoopLock do
 
   describe '.lock' do
     it 'should lock unlocked entities' do
-      LoopLock.lock(@lock).should be(true)
+      expect(LoopLock.lock(@lock)).to be(true)
     end
 
     it 'should create a lock record for unlocked entities' do
@@ -18,14 +18,14 @@ describe LoopLock do
     end
 
     it 'should not lock an entity more than once' do
-      LoopLock.lock(@lock).should be(true)
-      LoopLock.lock(@lock).should be(false)
+      expect(LoopLock.lock(@lock)).to be(true)
+      expect(LoopLock.lock(@lock)).to be(false)
     end
 
     it 'should remove stale locks' do
       @lock[:timeout] = -1 # Expired 1 second ago :-)
-      LoopLock.lock(@lock).should be(true)
-      LoopLock.lock(@lock).should be(true)
+      expect(LoopLock.lock(@lock)).to be(true)
+      expect(LoopLock.lock(@lock)).to be(true)
     end
   end
 
@@ -36,14 +36,14 @@ describe LoopLock do
 
     it 'should remove lock records for a locked entities' do
       expect {
-        LoopLock.unlock(@lock).should be(true)
+        expect(LoopLock.unlock(@lock)).to be(true)
       }.to change { LoopLock.locked?(@lock) }.from(true).to(false)
     end
 
     it 'should gracefully handle situations where we unlock a non-locked entities' do
       LoopLock.reset!
       expect {
-        LoopLock.unlock(@lock).should be(false)
+        expect(LoopLock.unlock(@lock)).to be(false)
       }.to_not change { LoopLock.locked?(@lock) }
     end
   end
@@ -51,11 +51,11 @@ describe LoopLock do
   describe '.locked?' do
     it 'should return true for a locked entity' do
       LoopLock.lock(@lock)
-      LoopLock.locked?(@lock).should be(true)
+      expect(LoopLock.locked?(@lock)).to be(true)
     end
 
     it 'should return false for a non-locked entity' do
-      LoopLock.locked?(@lock).should be(false)
+      expect(LoopLock.locked?(@lock)).to be(false)
     end
   end
 end
