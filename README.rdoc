@@ -63,7 +63,6 @@ When you have your loop ready to use, add the following lines to your (maybe emp
 
     loops:
       hello_world:
-        type: simple
         sleep_period: 10
 
 This is it! To manage your loop, just run one of the following commands:
@@ -97,14 +96,13 @@ could use instead of your <tt>./script/loops<tt> binary:
 
 == How to run more than one worker?
 
-If you want to have more than one copy of your worker running, that is as simple as adding one
+If you want to have more than one copy of your worker running, that is as easy as adding one
 option to your loop configuration:
 
     loops:
       hello_world:
-        type: simple
         sleep_period: 10
-        workers_number: 1
+        workers_number: 2
 
 This <tt>workers_number</tt> option would tell loops manager to spawn more than one copy of
 your loop and run them in parallel. The only thing you'd need to do is to remember about
@@ -120,12 +118,10 @@ the loop class to execute:
 
     loops:
       hello:
-        type: simple
         loop_name: some_module/my_worker
         language: English
 
       salut:
-        type: simple
         loop_name: some_module/my_worker
         language: French
 
@@ -204,7 +200,6 @@ With configs like this:
     loops:
       # An example of a STOMP queue-based loop
       my_queue:
-        type: queue
         host: 127.0.0.1
         port: 61613
         queue_name: blah
@@ -235,7 +230,7 @@ We've tested and used the plugin on MRI 1.8.6/1.8.7/1.9.3 and on JRuby 1.4.0. At
 not support demonization in JRuby. Obviously because of JVM limitations you won't be able to
 use <tt>fork</tt> workers engine in JRuby, but threaded workers do pretty well.
 
-We have a continuous integration server configured for the project: 
+We have a continuous integration server configured for the project:
 {<img src="https://secure.travis-ci.org/kovyrin/loops.png?branch=master" alt="Build Status" />}[http://travis-ci.org/kovyrin/loops]
 
 Recommended version of ruby ro run loops is Ruby Enterprise Edition. This is because we
