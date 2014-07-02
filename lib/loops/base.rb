@@ -192,7 +192,7 @@ class Loops::Base
       # Sleep for a second and handle sleep termination exceptions gracefully
       begin
         sleep(1)
-      rescue => e
+      rescue Exception => e
         debug("Sleep terminated with exception: #{e}")
         return false
       end
