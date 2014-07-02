@@ -171,16 +171,34 @@ class Loops::Base
   end
 
   #-------------------------------------------------------------------------------------------------
-  # Sleeps for +seconds+ seconds or until the loop enters the shutdown mode
+  #
+  # Sleeps for +sec+ seconds, constantly checking to make sure the loop is not in shutdown mode
+  # When it is time to shut down the sleep is interrupted
+  #
+  # Returns +true+ if the loop has sleeped for +sec+ seconds, +false+ if it has been interrupted.
+  #
   def sleep_with_shutdown_support(seconds)
-    debug("Sleeping for #{seconds}...")
+    debug("Sleeping for #{seconds} seconds...")
     start_time = Time.now.to_f
 
     # Wait until it is time to stop
     while Time.now.to_f - start_time < seconds
       # Stop if we're in shutdown mode
-      break if shutdown?
-      sleep(1)
+      if shutdown?
+        debug("Sleep terminated with a shutdown")
+        return false
+      end
+
+      # Sleep for a second and handle sleep termination exceptions gracefully
+      begin
+        sleep(1)
+      rescue => e
+        debug("Sleep terminated with exception: #{e}")
+        return false
+      end
     end
+
+    # We have slept for the whole period
+    return true
   end
 end
