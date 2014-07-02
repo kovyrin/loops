@@ -173,7 +173,8 @@ class Loops::Base
   #-------------------------------------------------------------------------------------------------
   #
   # Sleeps for +sec+ seconds, constantly checking to make sure the loop is not in shutdown mode
-  # When it is time to shut down the sleep is interrupted
+  # When it is time to shut down the sleep is interrupted. When a sleep call throws an exception,
+  # we propagate the signal to the process manager in cases where it makes sense to shut down.
   #
   # Returns +true+ if the loop has sleeped for +sec+ seconds, +false+ if it has been interrupted.
   #
@@ -192,8 +193,19 @@ class Loops::Base
       # Sleep for a second and handle sleep termination exceptions gracefully
       begin
         sleep(1)
+
+      rescue SystemExit
+        debug("Sleep terminated with a SystemExit, starting shutdown!")
+        @pm.start_shutdown!
+        return false
+
+      rescue Interrupt
+        debug("Sleep terminated with a SIGINT, starting shutdown!")
+        @pm.start_shutdown!
+        return false
+
       rescue Exception => e
-        debug("Sleep terminated with exception: #{e}")
+        debug("Sleep terminated with exception: #{e.class.to_s}")
         return false
       end
     end
