@@ -104,7 +104,7 @@ module Loops
         @options = {
           :daemonize   => false,
           :config_file => 'config/loops.yml',
-          :environment => 'development',
+          :environment => nil, # We'll guess it later
           :framework   => 'rails',
           :loops_root  => 'app/loops',
           :pid_file    => nil,
