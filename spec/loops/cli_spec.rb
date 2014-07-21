@@ -120,6 +120,7 @@ describe Loops::CLI do
       end
 
       it 'should set LOOPS_ENV and RAILS_ENV envionment variables' do
+        ENV['LOOPS_ENV'] = ENV['RAILS_ENV'] = ENV['MERB_ENV'] = nil
         Loops::CLI.parse(@args)
         expect(ENV['LOOPS_ENV']).to eq('development')
         expect(ENV['RAILS_ENV']).to eq('development')
