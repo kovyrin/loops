@@ -3,7 +3,7 @@ class Loops::Commands::StopCommand < Loops::Command
     STDOUT.sync = true
 
     unless Loops::Daemonize.check_pid(Loops.pid_file)
-      print "WARNING: No pid file or a stale pid file found! Exiting."
+      puts "WARNING: No pid file or a stale pid file found! Exiting."
       exit(0)
     end
 
