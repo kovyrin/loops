@@ -41,7 +41,7 @@ module Loops
         end
 
         # Define the subject if possible
-        if described_class.ancestors.include?(Loops::Base)
+        if described_class && described_class.ancestors.include?(Loops::Base)
           subject { create_loop(described_class, loop_config) }
         end
       end
