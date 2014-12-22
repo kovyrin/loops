@@ -204,7 +204,10 @@ class Loops::Engine
 
     def setup_signals
       stop = proc {
-        warn "Received a signal... stopping..."
+        # We need this because of https://bugs.ruby-lang.org/issues/7917
+        Thread.new do
+          warn "Received a signal... stopping..."
+        end
         @pm.start_shutdown!
       }
 
