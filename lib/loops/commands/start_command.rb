@@ -13,7 +13,15 @@ class Loops::Commands::StartCommand < Loops::Command
     end
 
     # Pid file creation
-    Loops::Daemonize.create_pid(Loops.pid_file)
+    begin
+      Loops::Daemonize.create_pid(Loops.pid_file)
+    rescue => e
+      puts
+      puts "Error: Failed to create pid file #{Loops.pid_file}!"
+      puts "Exception: #{e}"
+      puts
+      exit(1)
+    end
 
     # Workers processing
     engine.start_loops!(options[:args])
