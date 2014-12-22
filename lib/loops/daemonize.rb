@@ -26,7 +26,7 @@ module Loops
       if File.exist?(pid_file)
         puts "Pid file #{pid_file} exists! Checking the process..."
         if check_pid(pid_file)
-          puts "Can't create new pid file because another process is runnig!"
+          puts "Can't create new pid file because another process is running!"
           return false
         end
         puts "Stale pid file! Removing..."
