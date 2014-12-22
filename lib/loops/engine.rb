@@ -9,6 +9,7 @@ class Loops::Engine
     load_config
   end
 
+  #-------------------------------------------------------------------------------------------------
   def load_config
     # load and parse with erb
     raw_config = File.read(Loops.config_file)
@@ -25,11 +26,14 @@ class Loops::Engine
     Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
   end
 
+  #-------------------------------------------------------------------------------------------------
   def start_loops!(loops_to_start = [])
-    @running_loops = []
+    enabled_loops = []
+
+    # Initialize process manager
     @pm = Loops::ProcessManager.new(global_config, Loops.logger)
 
-    # Start all loops
+    # Start all enabled loops
     loops_config.each do |name, loop_config|
       # Do not load the loop if it is disabled
       next if loop_config['disabled']
@@ -44,22 +48,26 @@ class Loops::Engine
 
       # Start the loop
       start_loop(name, klass, loop_config)
-      @running_loops << name
+      enabled_loops << name
     end
 
     # Do not continue if there is nothing to run
-    if @running_loops.empty?
+    if enabled_loops.empty?
       puts 'WARNING: No loops to run! Exiting...'
       return
     end
 
-    # Start monitoring loop
+    # Set up signals to shut down when received an external signal to stop
     setup_signals
+
+    # Start process monitoring loop
     @pm.monitor_workers
 
+    # Done, exiting now
     info 'Loops are stopped now!'
   end
 
+  #-------------------------------------------------------------------------------------------------
   def debug_loop!(loop_name)
     @pm = Loops::ProcessManager.new(global_config, Loops.logger)
     loop_config = loops_config[loop_name] || {}

@@ -295,6 +295,10 @@ Available commands:
     start                            Start all loops except ones marked with disabled:true in config
     start loop1 [loop2]              Start only loops specified
     stop                             Stop daemonized loops monitor
+    monitor                          Start and monitor all enabled loops
+                                     (use this with supervisord, runit, upstart or systemd)
+    monitor loop1 [loop2]            Start and monitor only loops specified
+                                     (use this with supervisord, runit, upstart or systemd)
     stats                            Print loops memory statistics
     debug loop                       Debug specified loop
     help                             Show this message

@@ -75,6 +75,12 @@ This is it! To manage your loop, just run one of the following commands:
 
     $ ./script/loops start
 
+* To run all enabled non-disabled loops with logging mirrored to console (this method does not
+  create any pid files and never releases control of the terminal, so it is the perfect way of running
+  loops under the control of a supervisor like supervisord/runit/upstart/systemd):
+
+    $ ./script/loops monitor
+
 * To run all enabled loops in background:
 
     $ ./script/loops start -d
@@ -82,6 +88,10 @@ This is it! To manage your loop, just run one of the following commands:
 * To run specific loop in background:
 
     $ ./script/loops start hello_world -d
+
+* To run specific loop in foreground with logging mirrored to console:
+
+    $ ./script/loops monitor hello_world
 
 * To see all possible options:
 
