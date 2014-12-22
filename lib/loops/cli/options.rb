@@ -238,8 +238,8 @@ module Loops
             ENV['RAILS_ENV'] = Loops.environment
 
             # Bootstrap Rails
-            require_rails_script('config/boot', 'boot script')
-            require_rails_script('config/environment', 'environment script')
+            require_rails_script('config/boot.rb', 'boot script')
+            require_rails_script('config/environment.rb', 'environment script')
 
             # Loops default logger
             Loops.default_logger = Rails.logger
@@ -310,9 +310,9 @@ Available commands:
       script_path = File.join(Loops.root, script)
       unless File.exists?(script_path)
         puts
-        puts "Error: missing Rails #{description}: #{script}.rb"
+        puts "Error: missing Rails #{description}: #{script}"
         puts "Are you sure current directory is a root of a Rails project?"
-        puts "Current dir: #{Dir.pwd}"
+        puts "Current dir: #{Loops.root}"
         puts
         exit(1)
       end
