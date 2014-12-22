@@ -2,6 +2,7 @@ module Loops
   class ProcessManager
     attr_reader :logger
 
+    #-----------------------------------------------------------------------------------------------
     def initialize(config, logger)
       @config = {
         'poll_period' => 1,
@@ -14,11 +15,13 @@ module Loops
       @shutdown = false
     end
 
+    #-----------------------------------------------------------------------------------------------
     def update_wait_period(period)
       return unless period
       @config['wait_period'] = [@config['wait_period'], period].max
     end
 
+    #-----------------------------------------------------------------------------------------------
     def start_workers(name, number, &blk)
       raise ArgumentError, "Need a worker block!" unless block_given?
 
@@ -27,13 +30,14 @@ module Loops
       @worker_pools[name].start_workers(number)
     end
 
+    #-----------------------------------------------------------------------------------------------
     def monitor_workers
-      setup_signals
-
+      setup_process_manager_signals
       logger.info('Starting workers monitoring code...')
+
       loop do
         logger.debug("Checking workers' health...")
-        @worker_pools.each do |name, pool|
+        @worker_pools.values.each do |pool|
           break if shutdown?
           pool.check_workers
         end
@@ -42,6 +46,7 @@ module Loops
         logger.debug("Sleeping for #{@config['poll_period']} seconds...")
         sleep(@config['poll_period'])
       end
+
     ensure
       logger.info("Workers monitoring loop is finished, starting shutdown...")
       # Send out stop signals
@@ -55,12 +60,14 @@ module Loops
       end
     end
 
-    def setup_signals
+    #-----------------------------------------------------------------------------------------------
+    def setup_process_manager_signals
       # Zombie reapers
       trap('CHLD') {}
       trap('EXIT') {}
     end
 
+    #-----------------------------------------------------------------------------------------------
     def wait_for_workers(seconds)
       seconds.times do
         logger.info("Shutting down... waiting for workers to die (we have #{seconds} seconds)...")
@@ -82,22 +89,27 @@ module Loops
       return false
     end
 
+    #-----------------------------------------------------------------------------------------------
     def stop_workers(force = false)
       # Set shutdown flag
       logger.info("Stopping workers#{force ? ' (forced)' : ''}...")
 
       # Termination loop
-      @worker_pools.each do |name, pool|
+      @worker_pools.values.each do |pool|
         pool.stop_workers(force)
       end
     end
 
+    #-----------------------------------------------------------------------------------------------
     def shutdown?
       @shutdown
     end
 
+    #-----------------------------------------------------------------------------------------------
     def start_shutdown!
-      logger.info("Starting shutdown (shutdown flag set)...")
+      Thread.new do
+        logger.info("Starting shutdown (shutdown flag set)...")
+      end
       @shutdown = true
     end
   end
