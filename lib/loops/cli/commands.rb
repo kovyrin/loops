@@ -26,7 +26,14 @@ module Loops
         #
         def execute
           @@running = true
-          parse(ARGV).run!
+          cli = parse(ARGV)
+          cli.run!
+        rescue Loops::Errors::Error => e
+          puts
+          puts "Error: #{e}"
+          puts
+          exit(1)
+
         ensure
           @@running = false
         end
