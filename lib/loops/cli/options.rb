@@ -282,8 +282,8 @@ module Loops
           options[:pid_file] = if Loops.root.join('tmp/pids').directory?
             'tmp/pids/loops.pid'
           else
-            # ... or use global system pids folder
-            '/var/run/loops.pid'
+            # ... or use global tmp directory
+            '/var/tmp/loops.pid'
           end
         end
         @engine
