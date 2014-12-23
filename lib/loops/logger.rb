@@ -163,7 +163,7 @@ class Loops::Logger < ::Delegator
         log_message << progname
         log_message << message
 
-        return log_message.compact.join(' : ')
+        return log_message.compact.join(' : ') + "\n"
       end
     end
 
