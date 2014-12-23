@@ -35,7 +35,7 @@ describe Loops::CLI do
 
       it 'should load config from config/loops.yml by default' do
         cli = Loops::CLI.parse(@args)
-        expect(cli.engine.global_config['pid_file']).to eq('/var/run/superloops.pid')
+        expect(cli.engine.global_config['pid_file']).to eq('/tmp/superloops.pid')
       end
 
       it 'should load config from file specified' do
@@ -55,7 +55,7 @@ describe Loops::CLI do
 
       it 'should use pid file from global config section' do
         Loops::CLI.parse(@args)
-        expect(Loops.pid_file).to eq(Pathname.new('/var/run/superloops.pid'))
+        expect(Loops.pid_file).to eq(Pathname.new('/tmp/superloops.pid'))
       end
 
       it 'should absolutize relative pid file path' do
