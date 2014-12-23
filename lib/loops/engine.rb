@@ -17,10 +17,12 @@ class Loops::Engine
 
     @config = YAML.load(erb_config)
     @loops_config  = @config['loops']
+
+    global_user_config = @config['global'] || {}
     @global_config = {
       'poll_period'    => 1,
       'workers_engine' => 'fork'
-    }.merge(@config['global'])
+    }.merge(global_user_config)
 
     Loops.logger.default_logfile = @global_config['logger'] || $stdout
     Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
