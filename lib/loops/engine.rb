@@ -16,7 +16,7 @@ class Loops::Engine
     erb_config = ERB.new(raw_config).result
 
     @config = YAML.load(erb_config)
-    @loops_config  = @config['loops']
+    @loops_config  = @config['loops'] || raise("No data in 'loops' section in '#{Loops.config_file}'!")
 
     global_user_config = @config['global'] || {}
     @global_config = {
@@ -37,6 +37,8 @@ class Loops::Engine
 
     # Start all enabled loops
     loops_config.each do |name, loop_config|
+      loop_config ||= { }
+
       # Do not load the loop if it is disabled
       next if loop_config['disabled']
       next if loop_config.has_key?('enabled') && !loop_config['enabled']
@@ -151,7 +153,7 @@ class Loops::Engine
         the_logger = begin
             if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
               # this is happening right after the fork, therefore no need for teardown at the end of the proc
-              Loops.logger.logfile = config['logger']
+              Loops.logger.logfile = config['logger'] if config['logger']
               Loops.logger
             else
               # for backwards compatibility and handling threading engine
