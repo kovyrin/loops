@@ -36,7 +36,7 @@ module Loops
           @pid = Process.pid
           normal_exit = false
           begin
-            $0 = "loop worker: #{@name} ##{@index}\0"
+            $0 = "loop worker: #{@name} ##{@index}"
             @worker_block.call(self)
             normal_exit = true
             exit(0)
