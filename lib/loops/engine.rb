@@ -178,7 +178,6 @@ class Loops::Engine
         the_loop = klass.new(worker, name, config)
 
         debug "Starting the loop #{name}!"
-        fix_ar_after_fork
         # reseed the random number generator in case Loops calls
         # srand or rand prior to forking
         srand
@@ -226,22 +225,5 @@ class Loops::Engine
       trap('TERM', stop)
       trap('INT', stop)
       trap('EXIT', stop)
-    end
-
-    def fix_ar_after_fork
-      if Object.const_defined?('ActiveRecord')
-        if ActiveRecord::VERSION::MAJOR < 3
-          ActiveRecord::Base.allow_concurrency = true
-        elsif Object.const_defined?('Rails')
-          Rails.application.config.allow_concurrency = true
-        end
-
-        ActiveRecord::Base.clear_all_connections!
-        if ActiveRecord::VERSION::MAJOR >= 4
-          ActiveRecord::Base.connection_pool.connections.map(&:verify!)
-        else
-          ActiveRecord::Base.verify_active_connections!
-        end
-      end
     end
 end
