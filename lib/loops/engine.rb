@@ -104,7 +104,7 @@ class Loops::Engine
     def load_loop_class(name, config)
       loop_name = config['loop_name'] || name
 
-      klass_files = [Loops.loops_root + "#{loop_name}_loop.rb", "#{loop_name}_loop"]
+      klass_files = [File.join(Loops.loops_root, "#{loop_name}_loop.rb"), "#{loop_name}_loop"]
       begin
         klass_file = klass_files.shift
         debug "Loading class file: #{klass_file}"
