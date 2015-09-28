@@ -15,7 +15,7 @@ begin
 rescue SystemExit => e
   Kernel.exit(e.status)
 
-rescue Exception => e
+rescue => e
   STDERR.puts("Unhandled exception: #{e.message} (#{e.class})")
   STDERR.puts(e.backtrace.join("\n"))
   Kernel.exit(1)
