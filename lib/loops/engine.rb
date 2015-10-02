@@ -126,7 +126,7 @@ class Loops::Engine
 
       begin
         klass.check_dependencies
-      rescue Exception => e
+      rescue => e
         error "Loop #{name} dependencies check failed: #{e} at #{e.backtrace.first}"
         return false
       end
@@ -144,7 +144,7 @@ class Loops::Engine
           klass.initialize_loop(config)
           debug "Initialization successful"
         end
-      rescue Exception => e
+      rescue => e
         error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
         return
       end
@@ -203,7 +203,7 @@ class Loops::Engine
       return Loops.default_logger if config['logger'] == 'default'
       Loops::Logger.new(config['logger'])
 
-    rescue Exception => e
+    rescue => e
       message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
       puts "ERROR: #{message}"
 

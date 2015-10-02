@@ -204,7 +204,7 @@ class Loops::Base
         @pm.start_shutdown!
         return false
 
-      rescue Exception => e
+      rescue => e
         debug("Sleep terminated with exception: #{e.class.to_s}")
         return false
       end

@@ -40,7 +40,7 @@ module Loops
             @worker_block.call(self)
             normal_exit = true
             exit(0)
-          rescue Exception => e
+          rescue => e
             message = SystemExit === e ? "exit(#{e.status})" : e.to_s
             if SystemExit === e and e.success?
               if normal_exit
@@ -61,7 +61,7 @@ module Loops
       else
         raise ArgumentError, "Invalid engine name: #{@engine}"
       end
-    rescue Exception => e
+    rescue => e
       logger.error("Exception from worker: #{e} at #{e.backtrace.first}")
     end
 
