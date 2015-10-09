@@ -32,6 +32,11 @@ module Loops
           GC.copy_on_write_friendly = true
         end
 
+        # On Ruby 2.2 we need to make sure all loaded code will end up in the old gen before forking
+        # Otherwise, all of it will be marked as private dirty when GC kicks in after the fork.
+        # Since there are 3 generations, we just force ruby GC enough times to mark all existing objects as old.
+        4.times { GC.start }
+
         @pid = Kernel.fork do
           @pid = Process.pid
           normal_exit = false
