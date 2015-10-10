@@ -36,7 +36,7 @@ module Loops
           if config['max_requests'] && @total_served >= config['max_requests'].to_i
             disconnect_client_and_exit
           end
-        rescue Exception => e
+        rescue => e
           error "Exception from process message! We won't be ACKing the message."
           error "Details: #{e} at #{e.backtrace.first}"
           disconnect_client_and_exit
@@ -44,7 +44,7 @@ module Loops
       end
 
       @client.join
-    rescue Exception => e
+    rescue => e
       error "Closing queue connection because of exception: #{e} at #{e.backtrace.first}"
       disconnect_client_and_exit
     end

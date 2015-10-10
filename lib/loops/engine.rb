@@ -104,7 +104,7 @@ class Loops::Engine
     def load_loop_class(name, config)
       loop_name = config['loop_name'] || name
 
-      klass_files = [Loops.loops_root + "#{loop_name}_loop.rb", "#{loop_name}_loop"]
+      klass_files = [File.join(Loops.loops_root, "#{loop_name}_loop.rb"), "#{loop_name}_loop"]
       begin
         klass_file = klass_files.shift
         debug "Loading class file: #{klass_file}"
@@ -126,7 +126,7 @@ class Loops::Engine
 
       begin
         klass.check_dependencies
-      rescue Exception => e
+      rescue => e
         error "Loop #{name} dependencies check failed: #{e} at #{e.backtrace.first}"
         return false
       end
@@ -144,7 +144,7 @@ class Loops::Engine
           klass.initialize_loop(config)
           debug "Initialization successful"
         end
-      rescue Exception => e
+      rescue => e
         error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
         return
       end
@@ -178,7 +178,6 @@ class Loops::Engine
         the_loop = klass.new(worker, name, config)
 
         debug "Starting the loop #{name}!"
-        fix_ar_after_fork
         # reseed the random number generator in case Loops calls
         # srand or rand prior to forking
         srand
@@ -204,7 +203,7 @@ class Loops::Engine
       return Loops.default_logger if config['logger'] == 'default'
       Loops::Logger.new(config['logger'])
 
-    rescue Exception => e
+    rescue => e
       message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
       puts "ERROR: #{message}"
 
@@ -226,22 +225,5 @@ class Loops::Engine
       trap('TERM', stop)
       trap('INT', stop)
       trap('EXIT', stop)
-    end
-
-    def fix_ar_after_fork
-      if Object.const_defined?('ActiveRecord')
-        if ActiveRecord::VERSION::MAJOR < 3
-          ActiveRecord::Base.allow_concurrency = true
-        elsif Object.const_defined?('Rails')
-          Rails.application.config.allow_concurrency = true
-        end
-
-        ActiveRecord::Base.clear_all_connections!
-        if ActiveRecord::VERSION::MAJOR >= 4
-          ActiveRecord::Base.connection_pool.connections.map(&:verify!)
-        else
-          ActiveRecord::Base.verify_active_connections!
-        end
-      end
     end
 end
