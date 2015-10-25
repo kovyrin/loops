@@ -68,7 +68,7 @@ class Loops::Logger < ::Delegator
         when 'stderr' then $stderr
         when IO, StringIO then logfile
         else
-          if Loops.root
+          if Loops.root && logfile
             logfile =~ /^\// ? logfile : Loops.root.join(logfile).to_s
           else
             logfile

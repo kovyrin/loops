@@ -8,3 +8,5 @@ spec/rails/tmp
 *.pid
 Gemfile.lock
 .rvmrc
+*.swp
+tags
