@@ -4,7 +4,7 @@ class Loops::Commands::MonitorCommand < Loops::Command
     Loops.logger.write_to_console = true
 
     # Set process name
-    $0 = "loops monitor: #{options[:args].join(' ') rescue 'all'}\0"
+    $0 = "loops monitor: #{options[:args].join(' ') rescue 'all'}"
 
     # Start loops and let the monitor process take over
     puts "Starting loops in monitor mode..."
