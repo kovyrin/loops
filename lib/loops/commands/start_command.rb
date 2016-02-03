@@ -8,7 +8,7 @@ class Loops::Commands::StartCommand < Loops::Command
 
     # Daemonization
     if options[:daemonize]
-      app_name = "loops monitor: #{options[:args].join(' ') rescue 'all'}\0"
+      app_name = "loops monitor: #{options[:args].join(' ') rescue 'all'}"
       Loops::Daemonize.daemonize(app_name)
     end
 
