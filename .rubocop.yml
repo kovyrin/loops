@@ -10,6 +10,20 @@ Metrics/BlockLength:
   Exclude:
     - spec/**/*
 
+# TODO: Reduce this number as we refactor
 Metrics/CyclomaticComplexity:
+  Max: 20
   Exclude:
     - spec/**/*
+
+# TODO: Reduce this number as we refactor
+Metrics/ClassLength:
+  Max: 250
+
+# TODO: Reduce this number as we refactor
+Metrics/MethodLength:
+  Max: 100
+
+# TODO: Reduce this number as we refactor
+Metrics/AbcSize:
+  Max: 100
