@@ -18,6 +18,8 @@ Gem::Specification.new do |s|
   DESC
   s.rdoc_options = ['--charset=UTF-8']
 
+  s.required_ruby_version = '~> 3.2'
+
   s.files            = `git ls-files`.split("\n")
   s.executables      = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   s.require_paths    = ['lib']
