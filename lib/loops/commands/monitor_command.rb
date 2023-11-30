@@ -2,17 +2,20 @@
 
 module Loops
   module Commands
-    class MonitorCommand < Loops::Command
+    class MonitorCommand < Loops::Command # :nodoc:
       def execute
         # Mirror logging to console
         Loops.logger.write_to_console = true
+        Loops.logger.default_logfile = File::NULL
 
         # Set process name
-        $0 = "loops monitor: #{begin
+        loops_args = begin
           options[:args].join(' ')
         rescue StandardError
           'all'
-        end}" # + "\0" # TODO: fix this
+        end
+
+        $0 = "loops monitor: #{loops_args}"
 
         # Start loops and let the monitor process take over
         puts 'Starting loops in monitor mode...'
