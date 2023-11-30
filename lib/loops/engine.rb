@@ -8,26 +8,33 @@ module Loops
       load_config
     end
 
-    #-------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def load_config
       # load and parse with erb
       raw_config = File.read(Loops.config_file)
       erb_config = ERB.new(raw_config).result
 
       @config = YAML.load(erb_config)
-      @loops_config = @config['loops'] || raise("No data in 'loops' section in '#{Loops.config_file}'!")
+      @loops_config = @config['loops']
+      unless loops_config.is_a?(Hash)
+        raise("No or invalid data in 'loops' section in '#{Loops.config_file}'! Expected a hash.")
+      end
 
       global_user_config = @config['global'] || {}
+      unless global_user_config.is_a?(Hash)
+        raise("Invalid data in 'global' section in '#{Loops.config_file}'! Expected a hash.")
+      end
+
       @global_config = {
         'poll_period' => 1,
         'workers_engine' => 'fork'
       }.merge(global_user_config)
 
-      Loops.logger.default_logfile = @global_config['logger'] || $stdout
-      Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
+      Loops.logger.default_logfile = global_config['logger'] || $stdout
+      Loops.logger.colorful_logs = global_config['colorful_logs'] || global_config['colourful_logs']
     end
 
-    #-------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def start_loops!(loops_to_start = [])
       enabled_loops = []
 
@@ -70,7 +77,7 @@ module Loops
       info 'Loops are stopped now!'
     end
 
-    #-------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
     def debug_loop!(loop_name)
       @pm = Loops::ProcessManager.new(global_config, Loops.logger)
       loop_config = loops_config[loop_name] || {}
@@ -140,6 +147,58 @@ module Loops
       klass
     end
 
+    def set_logger_level(_logger, config)
+      return unless config
+
+      if config.is_a?(String)
+        level = begin
+          Logger::Severity.const_get(config.upcase)
+        rescue StandardError
+          nil
+        end
+        the_logger.level = level if level
+      elsif config.is_a?(Integer)
+        the_logger.level = config
+      else
+        raise "Invalid log level value: #{config.inspect}"
+      end
+    end
+
+    def define_loop_proc(loop_name, loop_class)
+      proc do |worker|
+        the_logger = if Loops.logger.is_a?(Loops::Logger) && global_config['workers_engine'] == 'fork'
+                       # This is happening right after the fork, therefore no need for teardown at
+                       # the end of the proc
+                       Loops.logger.logfile = config['logger'] if config['logger']
+                       Loops.logger
+                     else
+                       # for backwards compatibility and handling threading engine
+                       create_logger(loop_name, config)
+                     end
+
+        # Set logger level
+        set_logger_level(the_logger, config['log_level'])
+
+        # Colorize logging?
+        configured_colorful_logs = config['colorful_logs'] || config['colourful_logs']
+        if the_logger.respond_to?(:colorful_logs=) && configured_colorful_logs
+          the_logger.colorful_logs = configured_colorful_logs
+        end
+
+        debug "Instantiating loop class: #{loop_class}"
+        the_loop = loop_class.new(worker, loop_name, config)
+
+        # Fix ActiveRecord connections after forking
+        fix_ar_after_fork
+
+        # Reseed the random number generator in case a loop calls srand or rand prior to forking
+        srand
+
+        debug "Starting the loop #{loop_name}!"
+        the_loop.run
+      end
+    end
+
     def start_loop(name, klass, config)
       info "Starting loop: #{name}"
       info " - config: #{config.inspect}"
@@ -155,48 +214,13 @@ module Loops
         return
       end
 
-      loop_proc = proc do |worker|
-        the_logger = if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
-                       # this is happening right after the fork, therefore no need for teardown at the end of the proc
-                       Loops.logger.logfile = config['logger'] if config['logger']
-                       Loops.logger
-                     else
-                       # for backwards compatibility and handling threading engine
-                       create_logger(name, config)
-                     end
-
-        # Set logger level
-        if config['log_level'].is_a?(String)
-          level = begin
-            Logger::Severity.const_get(config['log_level'].upcase)
-          rescue StandardError
-            nil
-          end
-          the_logger.level = level if level
-        elsif config['log_level'].is_a?(Integer)
-          the_logger.level = config['log_level']
-        end
-
-        # Colorize logging?
-        if the_logger.respond_to?(:colorful_logs=) && (config.key?('colorful_logs') || config.key?('colourful_logs'))
-          the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
-        end
-
-        debug "Instantiating class: #{klass}"
-        the_loop = klass.new(worker, name, config)
-
-        debug "Starting the loop #{name}!"
-        fix_ar_after_fork
-        # reseed the random number generator in case Loops calls
-        # srand or rand prior to forking
-        srand
-        the_loop.run
-      end
+      # Create loop proc
+      loop_proc = define_loop_proc(name, klass)
 
       # If the loop is in debug mode, no need to use all kinds of
       # process managers here
       if config['debug_loop']
-        worker = Loops::Worker.new(name, @pm, @global_config['workers_engine'], 0, &loop_proc)
+        worker = Loops::Worker.new(name, @pm, global_config['workers_engine'], 0, &loop_proc)
         loop_proc.call(worker)
       else
         # If wait_period is specified for the loop, update ProcessManager's
