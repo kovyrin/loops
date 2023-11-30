@@ -4,7 +4,7 @@ module Loops
   module Commands
     class MonitorCommand < Loops::Command # :nodoc:
       def execute
-        # Mirror logging to console
+        # Send all logs to console, but do not write into a file
         Loops.logger.write_to_console = true
         Loops.logger.default_logfile = File::NULL
 
