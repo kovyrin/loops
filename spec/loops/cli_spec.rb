@@ -62,12 +62,12 @@ describe Loops::CLI do
 
       it 'should absolutize relative pid file path' do
         Loops::CLI.parse(@args << '-c' << 'config.yml')
-        expect(Loops.pid_file).to eq("#{Pathname.new(RAILS_ROOT).realpath}tmp/pids/loops.pid")
+        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath.join('tmp/pids/loops.pid'))
       end
 
       it 'should accept pid file from arguments' do
         Loops::CLI.parse(@args << '-p' << 'superloop.pid')
-        expect(Loops.pid_file).to eq("#{Pathname.new(RAILS_ROOT).realpath}superloop.pid")
+        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath.join('superloop.pid'))
       end
 
       it 'should extract command when passed' do

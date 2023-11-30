@@ -12,7 +12,7 @@ module Loops
     attr_reader :write_to_console
 
     # @return [Boolean]
-    #   A value inidicating whether critical errors should be highlighted
+    #   A value indicating whether critical errors should be highlighted
     #   with ANSI colors in the log.
     attr_reader :colorful_logs
 
