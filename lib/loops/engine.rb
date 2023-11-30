@@ -2,7 +2,7 @@
 
 module Loops
   class Engine
-    attr_reader :config, :loops_config, :global_config
+    attr_reader :loops_config, :global_config
 
     def initialize
       load_config
@@ -147,7 +147,7 @@ module Loops
       klass
     end
 
-    def set_logger_level(_logger, config)
+    def set_logger_level(logger, config)
       return unless config
 
       if config.is_a?(String)
@@ -156,37 +156,37 @@ module Loops
         rescue StandardError
           nil
         end
-        the_logger.level = level if level
+        logger.level = level if level
       elsif config.is_a?(Integer)
-        the_logger.level = config
+        logger.level = config
       else
         raise "Invalid log level value: #{config.inspect}"
       end
     end
 
-    def define_loop_proc(loop_name, loop_class)
+    def define_loop_proc(loop_name, loop_class, loop_config)
       proc do |worker|
         the_logger = if Loops.logger.is_a?(Loops::Logger) && global_config['workers_engine'] == 'fork'
                        # This is happening right after the fork, therefore no need for teardown at
                        # the end of the proc
-                       Loops.logger.logfile = config['logger'] if config['logger']
+                       Loops.logger.logfile = loop_config['logger'] if loop_config['logger']
                        Loops.logger
                      else
                        # for backwards compatibility and handling threading engine
-                       create_logger(loop_name, config)
+                       create_logger(loop_name, loop_config)
                      end
 
         # Set logger level
-        set_logger_level(the_logger, config['log_level'])
+        set_logger_level(the_logger, loop_config['log_level'])
 
         # Colorize logging?
-        configured_colorful_logs = config['colorful_logs'] || config['colourful_logs']
+        configured_colorful_logs = loop_config['colorful_logs'] || loop_config['colourful_logs']
         if the_logger.respond_to?(:colorful_logs=) && configured_colorful_logs
           the_logger.colorful_logs = configured_colorful_logs
         end
 
         debug "Instantiating loop class: #{loop_class}"
-        the_loop = loop_class.new(worker, loop_name, config)
+        the_loop = loop_class.new(worker, loop_name, loop_config)
 
         # Fix ActiveRecord connections after forking
         fix_ar_after_fork
@@ -199,44 +199,43 @@ module Loops
       end
     end
 
-    def start_loop(name, klass, config)
+    def start_loop(name, klass, loop_config)
       info "Starting loop: #{name}"
-      info " - config: #{config.inspect}"
+      info " - config: #{loop_config.inspect}"
 
       begin
         if klass.respond_to?(:initialize_loop)
           debug 'Initializing loop'
-          klass.initialize_loop(config)
+          klass.initialize_loop(loop_config)
           debug 'Initialization successful'
         end
-      rescue Exception => e
+      rescue StandardError => e
         error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
         return
       end
 
       # Create loop proc
-      loop_proc = define_loop_proc(name, klass)
+      loop_proc = define_loop_proc(name, klass, loop_config)
 
       # If the loop is in debug mode, no need to use all kinds of
       # process managers here
-      if config['debug_loop']
+      if loop_config['debug_loop']
         worker = Loops::Worker.new(name, @pm, global_config['workers_engine'], 0, &loop_proc)
         loop_proc.call(worker)
       else
-        # If wait_period is specified for the loop, update ProcessManager's
-        # setting.
-        @pm.update_wait_period(config['wait_period']) if config['wait_period']
-        @pm.start_workers(name, config['workers_number'] || 1, &loop_proc)
+        # If wait_period is specified for the loop, update ProcessManager's setting.
+        @pm.update_wait_period(loop_config['wait_period']) if loop_config['wait_period']
+        @pm.start_workers(name, loop_config['workers_number'] || 1, &loop_proc)
       end
     end
 
-    def create_logger(loop_name, config)
-      config['logger'] ||= 'default'
+    def create_logger(loop_name, loop_config)
+      loop_config['logger'] ||= 'default'
 
-      return Loops.default_logger if config['logger'] == 'default'
+      return Loops.default_logger if loop_config['logger'] == 'default'
 
-      Loops::Logger.new(config['logger'])
-    rescue Exception => e
+      Loops::Logger.new(loop_config['logger'])
+    rescue StandardError => e
       message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
       puts "ERROR: #{message}"
 

@@ -10,7 +10,6 @@ describe Loops do
     end
 
     it 'should load and parse Loops configuration file' do
-      expect(@engine.config).to be_an_instance_of(Hash)
       expect(@engine.global_config).to be_an_instance_of(Hash)
       expect(@engine.loops_config).to be_an_instance_of(Hash)
     end

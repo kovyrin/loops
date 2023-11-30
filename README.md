@@ -69,7 +69,7 @@ empty still) `config/loops.yml` file `loops` section:
 ```yaml
 loops:
   hello_world:
-    sleep_period: 10
+    period: 10
 ```
 
 This is it! To manage your loop, just run one of the following commands:

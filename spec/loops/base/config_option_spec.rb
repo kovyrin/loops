@@ -2,10 +2,11 @@
 
 require 'spec_helper'
 
-describe Loops::Base, '.config_option method' do
-  class OptionTestLoop < Loops::Base
-  end
+class OptionTestLoop < Loops::Base
+  # empty loop for testing
+end
 
+describe Loops::Base, '.config_option method' do
   it 'should define an accessor method with the given name' do
     OptionTestLoop.config_option(:foo)
     expect(create_loop(OptionTestLoop)).to respond_to(:foo)

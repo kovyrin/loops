@@ -5,7 +5,7 @@ require 'loops/exceptions'
 
 module Loops
   module BaseConcerns
-    module ConfigOption
+    module ConfigOption # :nodoc:
       extend ActiveSupport::Concern
 
       # Backend for configuration options accessor methods
@@ -18,22 +18,19 @@ module Loops
 
         unless config.key?(name)
           if options[:required]
-            raise Loops::Exceptions::OptionNotFound,
-                  "Could not find option '#{name}'!"
+            raise Loops::Exceptions::OptionNotFound, "Could not find option '#{name}'!"
           end
 
           config_value = options[:default] if options[:default]
         end
 
         if options[:kind_of]
-          config_value = convert_option_value(name, config_value,
-                                              options[:kind_of])
+          config_value = convert_option_value(name, config_value, options[:kind_of])
         end
 
         config_value
       end
 
-      #---------------------------------------------------------------------------------------------
       # Converts a given option to a given class
       def convert_option_value(name, value, dest_class)
         # Check if we need to do any conversion at all
@@ -57,12 +54,11 @@ module Loops
           raise Loops::Exceptions::TypeError, error
         end
 
-        # Ok, no idea how to deal with this shit
+        # Ok, no idea how to deal with this class
         raise ArgumentError, "Unsupported :kind_of value for option '#{name}': #{dest_class}"
       end
 
-      #---------------------------------------------------------------------------------------------
-      module ClassMethods
+      module ClassMethods # :nodoc:
         # Returns configuration option validation params defined by the user
         def loops_config_options
           @config_options || {}
@@ -76,9 +72,9 @@ module Loops
           @config_options[name] = options
 
           class_eval <<-EVAL, __FILE__, __LINE__ + 1
-            def #{name}
-              read_config_option(#{name.inspect})
-            end
+            def #{name}                             # def sleep_period
+              read_config_option(#{name.inspect})   #   read_config_option('sleep_period')
+            end                                     # end
           EVAL
         end
       end
