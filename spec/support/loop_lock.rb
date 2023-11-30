@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Represents a lock object for a specific item.
 #
 # Usually you should use only {lock} and {unlock} methods to get
@@ -80,6 +82,7 @@ class LoopLock
   #
   def self.unlock(params)
     raise ArgumentError, 'Not enough params for a lock' unless params[:entity_id] && params[:loop]
+
     !!@@locks.reject! { |lock| lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] }
   end
 
@@ -101,6 +104,7 @@ class LoopLock
   #
   def self.locked?(params)
     raise ArgumentError, 'Not enough params for a lock' unless params[:entity_id] && params[:loop]
+
     !!@@locks.index { |lock| lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] }
   end
 end

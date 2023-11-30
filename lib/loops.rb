@@ -1,12 +1,13 @@
+# frozen_string_literal: true
+
 require 'yaml'
 require 'erb'
 require 'pathname'
 
 module Loops
-
   # @return [String]
   #   a full path to the loops "lib" directory.
-  LIB_ROOT = File.expand_path(File.dirname(__FILE__)) unless const_defined?('LIB_ROOT')
+  LIB_ROOT = __dir__ unless const_defined?('LIB_ROOT')
   # @return [String]
   #   a full path to the loops binary file.
   BINARY   = File.expand_path(File.join(LIB_ROOT, '../bin/loops')) unless const_defined?('BINARY')

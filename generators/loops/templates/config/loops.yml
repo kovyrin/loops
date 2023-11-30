@@ -5,7 +5,7 @@
 global:
   logger: stdout
   poll_period: 5
-  workers_engine: fork
+  worker_engine: fork
 
 # Each record in this section represents one loop which could be ran using loops plugin.
 # Each loop should have a file in app/loops directory with the same name as its config record.
@@ -13,12 +13,12 @@ loops:
 
   # Simple time printing loop
   simple:
-    workers_number: 1
+    worker_count: 1
     logger: default
 
   # An example of a STOMP queue-based loop
   queue:
-    workers_number: 2
+    worker_count: 2
     logger: log/loops/queue.log
     # logger_rotate: daily       # TODO
     # logger_max_size: 10000000  # TODO

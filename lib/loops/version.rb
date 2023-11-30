@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Contains information about currently used Loops version.
 #
 # @example
@@ -5,11 +7,11 @@
 #
 module Loops
   module Version
-    MAJOR = 2
-    MINOR = 1
+    MAJOR = 3
+    MINOR = 0
     PATCH = 0
     BUILD = 'dev'
 
-    STRING = [ MAJOR, MINOR, PATCH, BUILD ].compact.join('.')
+    STRING = [MAJOR, MINOR, PATCH, BUILD].compact.join('.')
   end
 end

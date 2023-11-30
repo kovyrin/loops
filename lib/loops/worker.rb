@@ -1,12 +1,11 @@
+# frozen_string_literal: true
+
 module Loops
   class Worker
-    attr_reader :name
-    attr_reader :pid
-    attr_reader :pm
-    attr_reader :index
+    attr_reader :name, :pid, :pm, :index
 
     def initialize(name, pm, engine, index, &blk)
-      raise ArgumentError, "Need a worker block!" unless block_given?
+      raise ArgumentError, 'Need a worker block!' unless block_given?
 
       @name = name
       @pm = pm
@@ -25,12 +24,11 @@ module Loops
 
     def run
       return if shutdown?
+
       if @engine == 'fork'
         # Enable COW-friendly garbage collector in Ruby Enterprise Edition
         # See http://www.rubyenterpriseedition.com/faq.html#adapt_apps_for_cow for more details
-        if GC.respond_to?(:copy_on_write_friendly=)
-          GC.copy_on_write_friendly = true
-        end
+        GC.copy_on_write_friendly = true if GC.respond_to?(:copy_on_write_friendly=)
 
         # On Ruby 2.2 we need to make sure all loaded code will end up in the old gen before forking
         # Otherwise, all of it will be marked as private dirty when GC kicks in after the fork.
@@ -46,10 +44,10 @@ module Loops
             normal_exit = true
             exit(0)
           rescue Exception => e
-            message = SystemExit === e ? "exit(#{e.status})" : e.to_s
-            if SystemExit === e and e.success?
+            message = e.is_a?(SystemExit) ? "exit(#{e.status})" : e.to_s
+            if e.is_a?(SystemExit) && e.success?
               if normal_exit
-                logger.info("Worker finished: normal return")
+                logger.info('Worker finished: normal return')
               else
                 logger.info("Worker exited: #{message} at #{e.backtrace.first}")
               end
@@ -73,17 +71,18 @@ module Loops
     def running?(verbose = false)
       if @engine == 'fork'
         return false unless @pid
+
         begin
           Process.waitpid(@pid, Process::WNOHANG)
           res = Process.kill(0, @pid)
           logger.debug("KILL(#{@pid}) = #{res}") if verbose
-          return true
+          true
         rescue Errno::ESRCH, Errno::ECHILD, Errno::EPERM => e
           logger.error("Exception from kill: #{e} at #{e.backtrace.first}") if verbose
-          return false
+          false
         end
       elsif @engine == 'thread'
-        @thread && @thread.alive?
+        @thread&.alive?
       else
         raise ArgumentError, "Invalid engine name: #{@engine}"
       end
@@ -95,7 +94,7 @@ module Loops
           sig = force ? 'SIGKILL' : 'SIGTERM'
           logger.debug("Sending #{sig} to ##{@pid}")
           Process.kill(sig, @pid)
-        rescue Errno::ESRCH, Errno::ECHILD, Errno::EPERM=> e
+        rescue Errno::ESRCH, Errno::ECHILD, Errno::EPERM => e
           logger.error("Exception from kill: #{e} at #{e.backtrace.first}")
         end
       elsif @engine == 'thread'

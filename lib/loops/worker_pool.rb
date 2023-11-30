@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Loops
   class WorkerPool
     attr_reader :name
@@ -29,6 +31,7 @@ module Loops
       logger.debug("Checking loop #{name} workers...")
       @workers.each do |worker|
         next if worker.running? || worker.shutdown?
+
         logger.info("Worker #{worker.name} is not running. Restart!")
         worker.run
       end
@@ -38,16 +41,18 @@ module Loops
       running = 0
       @workers.each do |worker|
         next unless worker.running?
+
         running += 1
         logger.info("Worker #{name} is still running (#{worker.pid})")
       end
-      return running
+      running
     end
 
     def stop_workers(force)
       logger.info("Stopping loop #{name} workers...")
       @workers.each do |worker|
         next unless worker.running?
+
         worker.stop(force)
       end
     end

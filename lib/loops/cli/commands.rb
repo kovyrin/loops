@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Loops
   class CLI
     # Contains methods related to Loops commands: retrieving, instantiating,
@@ -33,7 +35,6 @@ module Loops
           puts "Error: #{e}"
           puts
           exit(1)
-
         ensure
           @@running = false
         end
@@ -54,7 +55,7 @@ module Loops
         #   an +Array+ of command names.
         #
         def command_names
-          @@commands.keys.map { |c| c.to_s }
+          @@commands.keys.map(&:to_s)
         end
 
         # Return the registered command from the command name.
@@ -81,10 +82,10 @@ module Loops
           retried = false
 
           begin
-            const_name = command_name.capitalize.gsub(/_(.)/) { $1.upcase }
+            const_name = command_name.capitalize.gsub(/_(.)/) { ::Regexp.last_match(1).upcase }
             Loops::Commands.const_get("#{const_name}Command").new
           rescue NameError
-            if retried then
+            if retried
               nil
             else
               retried = true
@@ -112,9 +113,9 @@ module Loops
       #
       def find_command(command_name)
         possibilities = find_command_possibilities(command_name)
-        if possibilities.size > 1 then
+        if possibilities.size > 1
           raise Loops::InvalidCommandError, "Ambiguous command #{command_name} matches [#{possibilities.join(', ')}]"
-        elsif possibilities.size < 1 then
+        elsif possibilities.empty?
           raise Loops::InvalidCommandError, "Unknown command #{command_name}"
         end
 

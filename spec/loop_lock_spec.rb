@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe LoopLock do
   before :each do
-    @lock = { :entity_id => 1, :loop => 'test' }
+    @lock = { entity_id: 1, loop: 'test' }
     LoopLock.reset!
   end
 
@@ -12,9 +14,9 @@ describe LoopLock do
     end
 
     it 'should create a lock record for unlocked entities' do
-      expect {
+      expect do
         LoopLock.lock(@lock)
-      }.to change { LoopLock.locked?(@lock) }.from(false).to(true)
+      end.to change { LoopLock.locked?(@lock) }.from(false).to(true)
     end
 
     it 'should not lock an entity more than once' do
@@ -35,16 +37,16 @@ describe LoopLock do
     end
 
     it 'should remove lock records for a locked entities' do
-      expect {
+      expect do
         expect(LoopLock.unlock(@lock)).to be(true)
-      }.to change { LoopLock.locked?(@lock) }.from(true).to(false)
+      end.to change { LoopLock.locked?(@lock) }.from(true).to(false)
     end
 
     it 'should gracefully handle situations where we unlock a non-locked entities' do
       LoopLock.reset!
-      expect {
+      expect do
         expect(LoopLock.unlock(@lock)).to be(false)
-      }.to_not change { LoopLock.locked?(@lock) }
+      end.to_not(change { LoopLock.locked?(@lock) })
     end
   end
 

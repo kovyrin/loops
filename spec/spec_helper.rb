@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 SPEC_ROOT = File.dirname(__FILE__)
 PROJECT_ROOT = File.dirname(SPEC_ROOT)
 RAILS_ROOT = File.expand_path(File.join(SPEC_ROOT, 'rails'))
@@ -21,9 +23,9 @@ RSpec.configure do |config|
 
   # Enable old and new syntax for expectations and mocks
   config.expect_with :rspec do |c|
-    c.syntax = [ :should, :expect ]
+    c.syntax = %i[should expect]
   end
   config.mock_with :rspec do |c|
-    c.syntax = [ :should, :expect ]
+    c.syntax = %i[should expect]
   end
 end

@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'English'
 module Loops
   module Daemonize
     def self.read_pid(pid_file)
@@ -11,9 +14,10 @@ module Loops
     def self.check_pid(pid_file)
       pid = read_pid(pid_file)
       return false if pid.zero?
+
       if defined?(::JRuby)
         system "kill -0 #{pid} &> /dev/null"
-        return $? == 0
+        return $CHILD_STATUS == 0
       else
         Process.kill(0, pid)
       end
@@ -29,7 +33,7 @@ module Loops
           puts "Can't create new pid file because another process is running!"
           return false
         end
-        puts "Stale pid file! Removing..."
+        puts 'Stale pid file! Removing...'
         File.delete(pid_file)
       end
 
@@ -37,32 +41,32 @@ module Loops
         f.puts(Process.pid)
       end
 
-      return true
+      true
     end
 
     def self.daemonize(app_name)
       if defined?(::JRuby)
-        puts "WARNING: daemonize method is not implemented for JRuby (yet), please consider using nohup."
+        puts 'WARNING: daemonize method is not implemented for JRuby (yet), please consider using nohup.'
         return
       end
 
       fork && exit # Fork and exit from the parent
 
       # Detach from the controlling terminal
-      unless sess_id = Process.setsid
-        raise Daemons.RuntimeException.new('cannot detach from controlling terminal')
+      unless (sess_id = Process.setsid)
+        raise Daemons.RuntimeException, 'cannot detach from controlling terminal'
       end
 
       # Prevent the possibility of acquiring a controlling terminal
       trap 'SIGHUP', 'IGNORE'
-      exit if pid = fork
+      exit if fork
 
       $0 = app_name if app_name
 
       Dir.chdir(Loops.root) # Make sure we're in the working directory
-      File.umask(0000) # Insure sensible umask
+      File.umask(0o000) # Insure sensible umask
 
-      return sess_id
+      sess_id
     end
   end
 end

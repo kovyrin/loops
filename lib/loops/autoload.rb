@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 module Loops
   # @private
-  def self.__p(*path) File.join(Loops::LIB_ROOT, 'loops', *path) end
+  def self.__p(*) = File.join(Loops::LIB_ROOT, 'loops', *)
 
   autoload :Base,           __p('base')
   autoload :CLI,            __p('cli')

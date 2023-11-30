@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'stomp'
 rescue LoadError
@@ -9,7 +11,7 @@ require 'timeout'
 module Loops
   class Queue < Base
     def self.check_dependencies
-      raise "No stomp gem installed!" unless defined?(Stomp::Client)
+      raise 'No stomp gem installed!' unless defined?(Stomp::Client)
     end
 
     def run
@@ -19,28 +21,24 @@ module Loops
       config['prefetch_size'] ||= 1
       debug "Subscribing for the queue #{config['queue_name']}..."
 
-      headers = { :ack => :client }
-      headers["activemq.prefetchSize"] = config['prefetch_size'] if config['prefetch_size']
+      headers = { ack: :client }
+      headers['activemq.prefetchSize'] = config['prefetch_size'] if config['prefetch_size']
 
       @total_served = 0
       @client.subscribe(config['queue_name'], headers) do |msg|
-        begin
-          if config['action_timeout']
-            timeout(config['action_timeout']) { process_message(msg) }
-          else
-            process_message(msg)
-          end
-
-          @client.acknowledge(msg)
-          @total_served += 1
-          if config['max_requests'] && @total_served >= config['max_requests'].to_i
-            disconnect_client_and_exit
-          end
-        rescue Exception => e
-          error "Exception from process message! We won't be ACKing the message."
-          error "Details: #{e} at #{e.backtrace.first}"
-          disconnect_client_and_exit
+        if config['action_timeout']
+          timeout(config['action_timeout']) { process_message(msg) }
+        else
+          process_message(msg)
         end
+
+        @client.acknowledge(msg)
+        @total_served += 1
+        disconnect_client_and_exit if config['max_requests'] && @total_served >= config['max_requests'].to_i
+      rescue Exception => e
+        error "Exception from process message! We won't be ACKing the message."
+        error "Details: #{e} at #{e.backtrace.first}"
+        disconnect_client_and_exit
       end
 
       @client.join
@@ -49,14 +47,14 @@ module Loops
       disconnect_client_and_exit
     end
 
-    def process_message(msg)
-      raise "This method process_message(msg) should be overriden in the loop class!"
+    def process_message(_msg)
+      raise 'This method process_message(msg) should be overriden in the loop class!'
     end
 
-  private
+    private
 
     def create_client
-      config['port'] ||= config['port'].to_i == 0 ? 61613 : config['port'].to_i
+      config['port'] ||= config['port'].to_i.zero? ? 61_613 : config['port'].to_i
       config['host'] ||= 'localhost'
 
       @client = Stomp::Client.open(config['user'], config['password'], config['host'], config['port'], true)
@@ -64,9 +62,17 @@ module Loops
     end
 
     def disconnect_client_and_exit
-      debug "Unsubscribing..."
-      @client.unsubscribe(name) rescue nil
-      @client.close() rescue nil
+      debug 'Unsubscribing...'
+      begin
+        @client.unsubscribe(name)
+      rescue StandardError
+        nil
+      end
+      begin
+        @client.close
+      rescue StandardError
+        nil
+      end
       exit(0)
     end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Loops::CLI do
@@ -15,7 +17,7 @@ describe Loops::CLI do
 
   describe 'with Loops::CLI::Options included' do
     before :each do
-      @args = [ 'list', '-f', 'none']
+      @args = ['list', '-f', 'none']
     end
 
     context 'when current directory could be detected' do
@@ -45,7 +47,7 @@ describe Loops::CLI do
 
       it 'should initialize use app/loops as a root directory for loops by default' do
         Loops::CLI.parse(@args)
-        expect(Loops.loops_root).to eq(Pathname.new(RAILS_ROOT + '/app/loops').realpath)
+        expect(Loops.loops_root).to eq(Pathname.new("#{RAILS_ROOT}/app/loops").realpath)
       end
 
       it 'should use specified root directory for loops' do
@@ -60,12 +62,12 @@ describe Loops::CLI do
 
       it 'should absolutize relative pid file path' do
         Loops::CLI.parse(@args << '-c' << 'config.yml')
-        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath + 'tmp/pids/loops.pid')
+        expect(Loops.pid_file).to eq("#{Pathname.new(RAILS_ROOT).realpath}tmp/pids/loops.pid")
       end
 
       it 'should accept pid file from arguments' do
         Loops::CLI.parse(@args << '-p' << 'superloop.pid')
-        expect(Loops.pid_file).to eq(Pathname.new(RAILS_ROOT).realpath + 'superloop.pid')
+        expect(Loops.pid_file).to eq("#{Pathname.new(RAILS_ROOT).realpath}superloop.pid")
       end
 
       it 'should extract command when passed' do
@@ -81,13 +83,13 @@ describe Loops::CLI do
 
       it 'should remove all unnecessary options' do
         cli = Loops::CLI.parse(@args << '-r' << RAILS_ROOT << '-p' << 'loop.pid' << '-c' << 'config.yml' << '-l' << '.' << '-d')
-        expect(cli.options.keys.map(&:to_s).sort).to eq(%w(command args daemonize require).sort)
+        expect(cli.options.keys.map(&:to_s).sort).to eq(%w[command args daemonize require].sort)
       end
     end
 
     context 'when root directory passed in arguments' do
       before :each do
-        @args << '-r' << File.dirname(__FILE__) + '/../rails'
+        @args << '-r' << ("#{File.dirname(__FILE__)}/../rails")
       end
 
       it 'should detect root directory' do
@@ -103,7 +105,7 @@ describe Loops::CLI do
 
     context 'with Rails framework' do
       before :each do
-        @args = [ 'start', 'test', '-r', File.dirname(__FILE__) + '/../rails' ]
+        @args = ['start', 'test', '-r', "#{File.dirname(__FILE__)}/../rails"]
         Loops::CLI.parse(@args)
       end
 
@@ -122,8 +124,8 @@ describe Loops::CLI do
       it 'should set LOOPS_ENV and RAILS_ENV envionment variables' do
         ENV['LOOPS_ENV'] = ENV['RAILS_ENV'] = ENV['MERB_ENV'] = nil
         Loops::CLI.parse(@args)
-        expect(ENV['LOOPS_ENV']).to eq('development')
-        expect(ENV['RAILS_ENV']).to eq('development')
+        expect(ENV.fetch('LOOPS_ENV', nil)).to eq('development')
+        expect(ENV.fetch('RAILS_ENV', nil)).to eq('development')
       end
     end
 
@@ -134,57 +136,57 @@ describe Loops::CLI do
 
       it 'should set LOOPS_ENV environment variable' do
         Loops::CLI.parse(@args)
-        expect(ENV['LOOPS_ENV']).to eq('production')
+        expect(ENV.fetch('LOOPS_ENV', nil)).to eq('production')
       end
 
       it 'should set RAILS_ENV environment variable for Rails framework' do
-        @args = [ 'start', 'test', '-r', File.dirname(__FILE__) + '/../rails', '-e', 'production' ]
+        @args = ['start', 'test', '-r', "#{File.dirname(__FILE__)}/../rails", '-e', 'production']
         Loops::CLI.parse(@args)
-        expect(ENV['LOOPS_ENV']).to eq('production')
-        expect(ENV['RAILS_ENV']).to eq('production')
+        expect(ENV.fetch('LOOPS_ENV', nil)).to eq('production')
+        expect(ENV.fetch('RAILS_ENV', nil)).to eq('production')
       end
 
       it 'should set LOOPS_ENV before require files throut -R' do
-        @args << '-R' << File.dirname(__FILE__) + '/../rails/config/init'
+        @args << '-R' << ("#{File.dirname(__FILE__)}/../rails/config/init")
         Loops::CLI.parse(@args)
-        expect(::CURRENT_LOOPS_ENV).to eq('production')
+        expect(CURRENT_LOOPS_ENV).to eq('production')
       end
     end
   end
 
   describe 'with Loops::CLI::Commands included' do
     before :each do
-      @args = [ 'list', '-f', 'none', '-r', RAILS_ROOT]
+      @args = ['list', '-f', 'none', '-r', RAILS_ROOT]
       @cli = Loops::CLI.parse(@args)
     end
 
     describe 'in #find_command_possibilities' do
       it 'should return a list of possible commands' do
-        expect(@cli.find_command_possibilities('s').sort).to   eq(%w(start stats stop))
-        expect(@cli.find_command_possibilities('sta').sort).to eq(%w(start stats))
-        expect(@cli.find_command_possibilities('star')).to     eq(%w(start))
-        expect(@cli.find_command_possibilities('l')).to        eq(%w(list))
+        expect(@cli.find_command_possibilities('s').sort).to   eq(%w[start stats stop])
+        expect(@cli.find_command_possibilities('sta').sort).to eq(%w[start stats])
+        expect(@cli.find_command_possibilities('star')).to     eq(%w[start])
+        expect(@cli.find_command_possibilities('l')).to        eq(%w[list])
         expect(@cli.find_command_possibilities('o')).to        eq([])
       end
     end
 
     describe 'in #find_command' do
       it 'should raise InvalidCommandError when command is not found' do
-        expect {
+        expect do
           @cli.find_command('o')
-        }.to raise_error(Loops::InvalidCommandError)
+        end.to raise_error(Loops::InvalidCommandError)
       end
 
       it 'should raise InvalidCommandError when ambiguous command matches found' do
-        expect {
+        expect do
           @cli.find_command('s')
-        }.to raise_error(Loops::InvalidCommandError)
+        end.to raise_error(Loops::InvalidCommandError)
       end
 
       it 'should return an instance of command when everything is ok' do
-        expect {
+        expect do
           expect(@cli.find_command('star')).to be_a(Loops::Commands::StartCommand)
-        }.to_not raise_error
+        end.to_not raise_error
       end
     end
   end

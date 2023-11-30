@@ -1,4 +1,6 @@
-%w(commands options).each { |p| require File.join(Loops::LIB_ROOT, 'loops/cli', p) }
+# frozen_string_literal: true
+
+%w[commands options].each { |p| require File.join(Loops::LIB_ROOT, 'loops/cli', p) }
 
 module Loops
   # Command line interface for the Loops system.
@@ -10,7 +12,8 @@ module Loops
   #   Loops::CLI.execute
   #
   class CLI
-    include Commands, Options
+    include Options
+    include Commands
 
     # Register all available commands.
     register_command :list

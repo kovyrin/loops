@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Simple loop with its own custom run method
 #
 # Does nothing aside from printing loop's name, pid and current time every second

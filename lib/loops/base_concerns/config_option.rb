@@ -1,5 +1,7 @@
-require "active_support/concern"
-require "loops/exceptions"
+# frozen_string_literal: true
+
+require 'active_support/concern'
+require 'loops/exceptions'
 
 module Loops
   module BaseConcerns
@@ -14,39 +16,34 @@ module Loops
         name = name.to_s
         config_value = config[name]
 
-        unless config.has_key?(name)
-          if options[:required]
-            raise Loops::Exceptions::OptionNotFound, "Could not find option '#{name}'!"
-          end
+        unless config.key?(name)
+          raise Loops::Exceptions::OptionNotFound, "Could not find option '#{name}'!" if options[:required]
+
           config_value = options[:default] if options[:default]
         end
 
-        if options[:kind_of]
-          config_value = convert_option_value(name, config_value, options[:kind_of])
-        end
+        config_value = convert_option_value(name, config_value, options[:kind_of]) if options[:kind_of]
 
-        return config_value
+        config_value
       end
 
       #---------------------------------------------------------------------------------------------
       # Converts a given option to a given class
       def convert_option_value(name, value, dest_class)
         # Check if we need to do any conversion at all
-        [ *dest_class ].each do |dc|
-          return value if value.kind_of?(dc)
+        [*dest_class].each do |dc|
+          return value if value.is_a?(dc)
         end
 
         # Ok, we need to convert it, now make sure we have only one destination class
-        unless dest_class.is_a?(Class)
-          raise ArgumentError, "Ambiguous :kind_of value for option '#{name}': #{dest_class.inspect}"
-        end
+        raise ArgumentError, "Ambiguous :kind_of value for option '#{name}': #{dest_class.inspect}" unless dest_class.is_a?(Class)
 
         # Let's try to do the conversion
         begin
           return value.to_i if dest_class.ancestors.include?(Integer)
           return value.to_f if dest_class.ancestors.include?(Float)
           return value.to_s if dest_class == String
-        rescue => e
+        rescue StandardError => e
           error = "Failed to convert option '#{name}' value #{value.inspect} to #{dest_class}: #{e}"
           raise Loops::Exceptions::TypeError, error
         end

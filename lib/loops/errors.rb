@@ -1,6 +1,10 @@
-module Loops::Errors
-  Error = Class.new(RuntimeError)
+# frozen_string_literal: true
 
-  InvalidFrameworkError = Class.new(Error)
-  InvalidCommandError   = Class.new(Error)
+module Loops
+  module Errors
+    Error = Class.new(RuntimeError)
+
+    InvalidFrameworkError = Class.new(Error)
+    InvalidCommandError   = Class.new(Error)
+  end
 end

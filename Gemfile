@@ -1,6 +1,11 @@
-source "http://rubygems.org"
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
 
 gemspec
 
+gem 'activesupport', '~> 7.1.1'
 gem 'rake'
-gem 'activesupport', '~> 3.2.15'
+gem 'rspec'
+gem 'rubocop'
+gem 'yard'

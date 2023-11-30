@@ -1,12 +1,13 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 vendored_loops_binary = Dir[File.join(File.dirname(__FILE__),
-                                         '..',
-                                         'vendor',
-                                         '{gems,plugins}',
-                                         'loops*',
-                                         'bin',
-                                         'loops')].first
+                                      '..',
+                                      'vendor',
+                                      '{gems,plugins}',
+                                      'loops*',
+                                      'bin',
+                                      'loops')].first
 
 # Initialize loops root variable
 ENV['LOOPS_ROOT'] = File.expand_path(File.join(File.dirname(__FILE__), '..'))

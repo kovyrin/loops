@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Loops
   module Exceptions
     class GenericError < StandardError; end

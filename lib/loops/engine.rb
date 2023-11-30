@@ -1,99 +1,98 @@
-class Loops::Engine
-  attr_reader :config
+# frozen_string_literal: true
 
-  attr_reader :loops_config
+module Loops
+  class Engine
+    attr_reader :config, :loops_config, :global_config
 
-  attr_reader :global_config
+    def initialize
+      load_config
+    end
 
-  def initialize
-    load_config
-  end
+    #-------------------------------------------------------------------------------------------------
+    def load_config
+      # load and parse with erb
+      raw_config = File.read(Loops.config_file)
+      erb_config = ERB.new(raw_config).result
 
-  #-------------------------------------------------------------------------------------------------
-  def load_config
-    # load and parse with erb
-    raw_config = File.read(Loops.config_file)
-    erb_config = ERB.new(raw_config).result
+      @config = YAML.load(erb_config)
+      @loops_config = @config['loops'] || raise("No data in 'loops' section in '#{Loops.config_file}'!")
 
-    @config = YAML.load(erb_config)
-    @loops_config  = @config['loops'] || raise("No data in 'loops' section in '#{Loops.config_file}'!")
+      global_user_config = @config['global'] || {}
+      @global_config = {
+        'poll_period' => 1,
+        'workers_engine' => 'fork'
+      }.merge(global_user_config)
 
-    global_user_config = @config['global'] || {}
-    @global_config = {
-      'poll_period'    => 1,
-      'workers_engine' => 'fork'
-    }.merge(global_user_config)
+      Loops.logger.default_logfile = @global_config['logger'] || $stdout
+      Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
+    end
 
-    Loops.logger.default_logfile = @global_config['logger'] || $stdout
-    Loops.logger.colorful_logs = @global_config['colorful_logs'] || @global_config['colourful_logs']
-  end
+    #-------------------------------------------------------------------------------------------------
+    def start_loops!(loops_to_start = [])
+      enabled_loops = []
 
-  #-------------------------------------------------------------------------------------------------
-  def start_loops!(loops_to_start = [])
-    enabled_loops = []
+      # Initialize process manager
+      @pm = Loops::ProcessManager.new(global_config, Loops.logger)
 
-    # Initialize process manager
-    @pm = Loops::ProcessManager.new(global_config, Loops.logger)
+      # Start all enabled loops
+      loops_config.each do |name, loop_config|
+        loop_config ||= {}
 
-    # Start all enabled loops
-    loops_config.each do |name, loop_config|
-      loop_config ||= { }
+        # Do not load the loop if it is disabled
+        next if loop_config['disabled']
+        next if loop_config.key?('enabled') && !loop_config['enabled']
 
-      # Do not load the loop if it is disabled
-      next if loop_config['disabled']
-      next if loop_config.has_key?('enabled') && !loop_config['enabled']
+        # Skip the loop if we were given a specific list of loops and this one wasn't on the list
+        next unless loops_to_start.empty? || loops_to_start.member?(name)
 
-      # Skip the loop if we were given a specific list of loops and this one wasn't on the list
-      next unless loops_to_start.empty? || loops_to_start.member?(name)
+        # Load the class
+        klass = load_loop_class(name, loop_config)
+        next unless klass
 
-      # Load the class
-      klass = load_loop_class(name, loop_config)
-      next unless klass
+        # Start the loop
+        start_loop(name, klass, loop_config)
+        enabled_loops << name
+      end
+
+      # Do not continue if there is nothing to run
+      if enabled_loops.empty?
+        puts 'WARNING: No loops to run! Exiting...'
+        return
+      end
+
+      # Set up signals to shut down when received an external signal to stop
+      setup_signals
+
+      # Start process monitoring loop
+      @pm.monitor_workers
+
+      # Done, exiting now
+      info 'Loops are stopped now!'
+    end
+
+    #-------------------------------------------------------------------------------------------------
+    def debug_loop!(loop_name)
+      @pm = Loops::ProcessManager.new(global_config, Loops.logger)
+      loop_config = loops_config[loop_name] || {}
+
+      # Adjust loop config values before starting it in debug mode
+      loop_config['workers_number'] = 1
+      loop_config['debug_loop'] = true
+
+      # Load loop class
+      unless (klass = load_loop_class(loop_name, loop_config))
+        puts "Can't load loop class!"
+        return false
+      end
 
       # Start the loop
-      start_loop(name, klass, loop_config)
-      enabled_loops << name
+      start_loop(loop_name, klass, loop_config)
     end
 
-    # Do not continue if there is nothing to run
-    if enabled_loops.empty?
-      puts 'WARNING: No loops to run! Exiting...'
-      return
-    end
-
-    # Set up signals to shut down when received an external signal to stop
-    setup_signals
-
-    # Start process monitoring loop
-    @pm.monitor_workers
-
-    # Done, exiting now
-    info 'Loops are stopped now!'
-  end
-
-  #-------------------------------------------------------------------------------------------------
-  def debug_loop!(loop_name)
-    @pm = Loops::ProcessManager.new(global_config, Loops.logger)
-    loop_config = loops_config[loop_name] || {}
-
-    # Adjust loop config values before starting it in debug mode
-    loop_config['workers_number'] = 1
-    loop_config['debug_loop'] = true
-
-    # Load loop class
-    unless klass = load_loop_class(loop_name, loop_config)
-      puts "Can't load loop class!"
-      return false
-    end
-
-    # Start the loop
-    start_loop(loop_name, klass, loop_config)
-  end
-
-  private
+    private
 
     # Proxy logger calls to the default loops logger
-    [ :debug, :error, :fatal, :info, :warn ].each do |meth_name|
+    %i[debug error fatal info warn].each do |meth_name|
       class_eval <<-EVAL, __FILE__, __LINE__ + 1
         def #{meth_name}(message)
           Loops.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
@@ -115,8 +114,12 @@ class Loops::Engine
         return false
       end
 
-      klass_name = "#{loop_name}_loop".split('/').map { |x| x.capitalize.gsub(/_(.)/) { $1.upcase } }.join('::')
-      klass = Object.const_get(klass_name) rescue nil
+      klass_name = "#{loop_name}_loop".split('/').map { |x| x.capitalize.gsub(/_(.)/) { ::Regexp.last_match(1).upcase } }.join('::')
+      klass = begin
+        Object.const_get(klass_name)
+      rescue StandardError
+        nil
+      end
       klass = klass_name.constantize if klass_name.respond_to?(:constantize) && !klass
 
       unless klass
@@ -131,7 +134,7 @@ class Loops::Engine
         return false
       end
 
-      return klass
+      klass
     end
 
     def start_loop(name, klass, config)
@@ -140,39 +143,39 @@ class Loops::Engine
 
       begin
         if klass.respond_to?(:initialize_loop)
-          debug "Initializing loop"
+          debug 'Initializing loop'
           klass.initialize_loop(config)
-          debug "Initialization successful"
+          debug 'Initialization successful'
         end
       rescue Exception => e
         error("Initialization failed: #{e.message}\n  " + e.backtrace.join("\n  "))
         return
       end
 
-      loop_proc = Proc.new do |worker|
-        the_logger = begin
-            if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
-              # this is happening right after the fork, therefore no need for teardown at the end of the proc
-              Loops.logger.logfile = config['logger'] if config['logger']
-              Loops.logger
-            else
-              # for backwards compatibility and handling threading engine
-              create_logger(name, config)
-            end
-        end
+      loop_proc = proc do |worker|
+        the_logger = if Loops.logger.is_a?(Loops::Logger) && @global_config['workers_engine'] == 'fork'
+                       # this is happening right after the fork, therefore no need for teardown at the end of the proc
+                       Loops.logger.logfile = config['logger'] if config['logger']
+                       Loops.logger
+                     else
+                       # for backwards compatibility and handling threading engine
+                       create_logger(name, config)
+                     end
 
         # Set logger level
-        if String === config['log_level']
-          level = Logger::Severity.const_get(config['log_level'].upcase) rescue nil
+        if config['log_level'].is_a?(String)
+          level = begin
+            Logger::Severity.const_get(config['log_level'].upcase)
+          rescue StandardError
+            nil
+          end
           the_logger.level = level if level
-        elsif Integer === config['log_level']
+        elsif config['log_level'].is_a?(Integer)
           the_logger.level = config['log_level']
         end
 
         # Colorize logging?
-        if the_logger.respond_to?(:colorful_logs=) && (config.has_key?('colorful_logs') || config.has_key?('colourful_logs'))
-          the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
-        end
+        the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs'] if the_logger.respond_to?(:colorful_logs=) && (config.key?('colorful_logs') || config.key?('colourful_logs'))
 
         debug "Instantiating class: #{klass}"
         the_loop = klass.new(worker, name, config)
@@ -202,8 +205,8 @@ class Loops::Engine
       config['logger'] ||= 'default'
 
       return Loops.default_logger if config['logger'] == 'default'
-      Loops::Logger.new(config['logger'])
 
+      Loops::Logger.new(config['logger'])
     rescue Exception => e
       message = "Can't create a logger for the #{loop_name} loop! Will log to the default logger!"
       puts "ERROR: #{message}"
@@ -211,14 +214,14 @@ class Loops::Engine
       message << "\nException: #{e} at #{e.backtrace.first}"
       error(message)
 
-      return Loops.default_logger
+      Loops.default_logger
     end
 
     def setup_signals
       stop = proc {
         # We need this because of https://bugs.ruby-lang.org/issues/7917
         Thread.new do
-          warn "Received a signal... stopping..."
+          warn 'Received a signal... stopping...'
         end
         @pm.start_shutdown!
       }
@@ -229,19 +232,20 @@ class Loops::Engine
     end
 
     def fix_ar_after_fork
-      if Object.const_defined?('ActiveRecord')
-        if ActiveRecord::VERSION::MAJOR < 3
-          ActiveRecord::Base.allow_concurrency = true
-        elsif Object.const_defined?('Rails')
-          Rails.application.config.allow_concurrency = true
-        end
+      return unless Object.const_defined?('ActiveRecord')
 
-        ActiveRecord::Base.clear_all_connections!
-        if ActiveRecord::VERSION::MAJOR >= 4
-          ActiveRecord::Base.connection_pool.connections.map(&:verify!)
-        else
-          ActiveRecord::Base.verify_active_connections!
-        end
+      if ActiveRecord::VERSION::MAJOR < 3
+        ActiveRecord::Base.allow_concurrency = true
+      elsif Object.const_defined?('Rails')
+        Rails.application.config.allow_concurrency = true
+      end
+
+      ActiveRecord::Base.clear_all_connections!
+      if ActiveRecord::VERSION::MAJOR >= 4
+        ActiveRecord::Base.connection_pool.connections.map(&:verify!)
+      else
+        ActiveRecord::Base.verify_active_connections!
       end
     end
+  end
 end

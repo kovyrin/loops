@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require 'optparse'
 
@@ -47,7 +49,7 @@ module Loops
       #
       def option_parser
         @option_parser ||= OptionParser.new do |opt|
-          opt.banner = "Usage: #{File.basename($0)} command [arg1 [arg2]] [options]"
+          opt.banner = "Usage: #{File.basename($PROGRAM_NAME)} command [arg1 [arg2]] [options]"
           opt.separator ''
           opt.separator COMMANDS_HELP
           opt.separator ''
@@ -57,7 +59,7 @@ module Loops
             options[:config_file] = config_file
           end
 
-          opt.on('-d', '--daemonize', 'Daemonize when all loops started') do |value|
+          opt.on('-d', '--daemonize', 'Daemonize when all loops started') do |_value|
             options[:daemonize] = true
           end
 
@@ -85,7 +87,7 @@ module Loops
             options[:require] << library
           end
 
-          opt.on_tail("-h", '--help', 'Show this message') do
+          opt.on_tail('-h', '--help', 'Show this message') do
             puts(opt)
             exit(0)
           end
@@ -102,21 +104,21 @@ module Loops
       #
       def parse_options!
         @options = {
-          :daemonize   => false,
-          :config_file => 'config/loops.yml',
-          :environment => nil, # We'll guess it later
-          :framework   => 'rails',
-          :loops_root  => 'app/loops',
-          :pid_file    => nil,
-          :root        => nil,
-          :require     => [],
+          daemonize: false,
+          config_file: 'config/loops.yml',
+          environment: nil, # We'll guess it later
+          framework: 'rails',
+          loops_root: 'app/loops',
+          pid_file: nil,
+          root: nil,
+          require: []
         }
 
         begin
           option_parser.parse!(args)
         rescue OptionParser::ParseError => e
-          STDERR.puts e.message
-          STDERR << "\n" << option_parser
+          warn e.message
+          $stderr << "\n" << option_parser
           exit
         end
 
@@ -137,7 +139,7 @@ module Loops
         start_engine!
 
         # Pid file
-        Loops.pid_file    = options.delete(:pid_file)
+        Loops.pid_file = options.delete(:pid_file)
 
         @options
       end
@@ -157,8 +159,8 @@ module Loops
           exit
         end
 
-        unless command = find_command(options[:command])
-          STDERR << option_parser
+        unless (command = find_command(options[:command]))
+          $stderr << option_parser
           exit
         end
         command
@@ -188,6 +190,7 @@ module Loops
           # Move up the FS hierarhy
           pwd = File.expand_path(File.join(current_dir, '..'))
           break if pwd == current_dir # if changing the directory made no difference, then we're at the top
+
           current_dir = pwd
         end
 
@@ -233,35 +236,35 @@ module Loops
         # Bootstrap the requested framework
         framework = options.delete(:framework)
         case framework
-          when 'rails'
-            # Set rails environment name
-            ENV['RAILS_ENV'] = Loops.environment
+        when 'rails'
+          # Set rails environment name
+          ENV['RAILS_ENV'] = Loops.environment
 
-            # Bootstrap Rails
-            require_rails_script('config/boot.rb', 'boot script')
-            require_rails_script('config/environment.rb', 'environment script')
+          # Bootstrap Rails
+          require_rails_script('config/boot.rb', 'boot script')
+          require_rails_script('config/environment.rb', 'environment script')
 
-            # Loops default logger
-            Loops.default_logger = Rails.logger
+          # Loops default logger
+          Loops.default_logger = Rails.logger
 
-          when 'merb'
-            require 'merb-core'
+        when 'merb'
+          require 'merb-core'
 
-            # Set merb environment name
-            ENV['MERB_ENV'] = Loops.environment
+          # Set merb environment name
+          ENV['MERB_ENV'] = Loops.environment
 
-            # Bootstrap Merb
-            Merb.start_environment(:adapter => 'runner', :environment => ENV['MERB_ENV'])
+          # Bootstrap Merb
+          Merb.start_environment(adapter: 'runner', environment: ENV.fetch('MERB_ENV', nil))
 
-            # Loops default logger
-            Loops.default_logger = Merb.logger
+          # Loops default logger
+          Loops.default_logger = Merb.logger
 
-          when 'none'
-            # Plain ruby loops
-            Loops.default_logger = Loops::Logger.new(STDOUT)
+        when 'none'
+          # Plain ruby loops
+          Loops.default_logger = Loops::Logger.new($stdout)
 
-          else
-            raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
+        else
+          raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
       end
 
@@ -280,31 +283,31 @@ module Loops
         unless options[:pid_file] ||= @engine.global_config['pid_file']
           # ... or try Rails' tmp/pids folder ...
           options[:pid_file] = if Loops.root.join('tmp/pids').directory?
-            'tmp/pids/loops.pid'
-          else
-            # ... or use global tmp directory
-            '/var/tmp/loops.pid'
-          end
+                                 'tmp/pids/loops.pid'
+                               else
+                                 # ... or use global tmp directory
+                                 '/var/tmp/loops.pid'
+                               end
         end
         @engine
       end
 
-      COMMANDS_HELP = <<-HELP
-Available commands:
-    list                             List available loops (based on config file)
-    start                            Start all loops except ones marked with disabled:true in config
-    start loop1 [loop2]              Start only loops specified
-    stop                             Stop daemonized loops monitor
-    monitor                          Start and monitor all enabled loops
-                                     (use this with supervisord, runit, upstart or systemd)
-    monitor loop1 [loop2]            Start and monitor only loops specified
-                                     (use this with supervisord, runit, upstart or systemd)
-    stats                            Print loops memory statistics
-    debug loop                       Debug specified loop
-    help                             Show this message
+      COMMANDS_HELP = <<~HELP
+        Available commands:
+            list                             List available loops (based on config file)
+            start                            Start all loops except ones marked with disabled:true in config
+            start loop1 [loop2]              Start only loops specified
+            stop                             Stop daemonized loops monitor
+            monitor                          Start and monitor all enabled loops
+                                             (use this with supervisord, runit, upstart or systemd)
+            monitor loop1 [loop2]            Start and monitor only loops specified
+                                             (use this with supervisord, runit, upstart or systemd)
+            stats                            Print loops memory statistics
+            debug loop                       Debug specified loop
+            help                             Show this message
       HELP
 
-      SPLIT_HELP_LINE = "\n#{' ' * 37}"
+      SPLIT_HELP_LINE = "\n#{' ' * 37}".freeze
     end
 
     #-----------------------------------------------------------------------------------------------
@@ -312,10 +315,10 @@ Available commands:
     def require_rails_script(script, description)
       # Check that we're actually within a rails project directory
       script_path = File.join(Loops.root, script)
-      unless File.exists?(script_path)
+      unless File.exist?(script_path)
         puts
         puts "Error: missing Rails #{description}: #{script}"
-        puts "Are you sure current directory is a root of a Rails project?"
+        puts 'Are you sure current directory is a root of a Rails project?'
         puts "Current dir: #{Loops.root}"
         puts
         exit(1)

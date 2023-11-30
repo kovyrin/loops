@@ -1,6 +1,8 @@
-require "active_support/concern"
-require "active_support/core_ext/string"
-require "active_support/core_ext/hash"
+# frozen_string_literal: true
+
+require 'active_support/concern'
+require 'active_support/core_ext/string'
+require 'active_support/core_ext/hash'
 
 module Loops
   module Testing
@@ -35,15 +37,13 @@ module Loops
 
       included do
         let(:loop_config) { {}.with_indifferent_access }
-        let(:loops_logger) { Logger.new(STDOUT) }
+        let(:loops_logger) { Logger.new($stdout) }
         let(:loops_process_manager) do
-          double("Loops::ProcessManager", :logger => loops_logger, :shutdown? => false)
+          double('Loops::ProcessManager', logger: loops_logger, shutdown?: false)
         end
 
         # Define the subject if possible
-        if described_class && described_class.ancestors.include?(Loops::Base)
-          subject { create_loop(described_class, loop_config) }
-        end
+        subject { create_loop(described_class, loop_config) } if described_class&.ancestors&.include?(Loops::Base)
       end
     end
 
@@ -51,15 +51,15 @@ module Loops
     # Enable loops example group
     RSpec.configure do |config|
       if config.respond_to?(:define_derived_metadata)
-        config.include(LoopsExampleGroup, :type => :loops)
-        config.define_derived_metadata(:file_path => %r{/spec/loops/}) do |metadata|
+        config.include(LoopsExampleGroup, type: :loops)
+        config.define_derived_metadata(file_path: %r{/spec/loops/}) do |metadata|
           metadata[:type] = :loops
         end
       else
         config.include(
           LoopsExampleGroup,
-          :type => :loops,
-          :example_group => { :file_path => %r{/spec/loops/} }
+          type: :loops,
+          example_group: { file_path: %r{/spec/loops/} }
         )
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RAILS_ENVIRONMENT_LOADED = true
 
 require 'ostruct'
