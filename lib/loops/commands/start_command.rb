@@ -16,7 +16,7 @@ module Loops
             options[:args].join(' ')
           rescue StandardError
             'all'
-          end}\0"
+          end}"
           Loops::Daemonize.daemonize(app_name)
         end
 

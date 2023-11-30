@@ -12,7 +12,7 @@ module Loops
           options[:args].join(' ')
         rescue StandardError
           'all'
-        end}\0"
+        end}" # + "\0" # TODO: fix this
 
         # Start loops and let the monitor process take over
         puts 'Starting loops in monitor mode...'

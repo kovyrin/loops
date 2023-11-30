@@ -94,9 +94,9 @@ module Loops
     # Proxy logger calls to the default loops logger
     %i[debug error fatal info warn].each do |meth_name|
       class_eval <<-EVAL, __FILE__, __LINE__ + 1
-        def #{meth_name}(message)
-          Loops.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"
-        end
+        def #{meth_name}(message)                                                 # def debug(message)
+          Loops.logger.#{meth_name} "loops[RUNNER/\#{Process.pid}]: \#{message}"  #   Loops.logger.debug "loops[RUNNER/\#{Process.pid}]: \#{message}"
+        end                                                                       # end
       EVAL
     end
 
@@ -114,7 +114,10 @@ module Loops
         return false
       end
 
-      klass_name = "#{loop_name}_loop".split('/').map { |x| x.capitalize.gsub(/_(.)/) { ::Regexp.last_match(1).upcase } }.join('::')
+      klass_name = "#{loop_name}_loop".split('/').map do |x|
+        x.capitalize.gsub(/_(.)/) { ::Regexp.last_match(1).upcase }
+      end.join('::')
+
       klass = begin
         Object.const_get(klass_name)
       rescue StandardError
@@ -175,7 +178,9 @@ module Loops
         end
 
         # Colorize logging?
-        the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs'] if the_logger.respond_to?(:colorful_logs=) && (config.key?('colorful_logs') || config.key?('colourful_logs'))
+        if the_logger.respond_to?(:colorful_logs=) && (config.key?('colorful_logs') || config.key?('colourful_logs'))
+          the_logger.colorful_logs = config['colorful_logs'] || config['colourful_logs']
+        end
 
         debug "Instantiating class: #{klass}"
         the_loop = klass.new(worker, name, config)
@@ -234,18 +239,10 @@ module Loops
     def fix_ar_after_fork
       return unless Object.const_defined?('ActiveRecord')
 
-      if ActiveRecord::VERSION::MAJOR < 3
-        ActiveRecord::Base.allow_concurrency = true
-      elsif Object.const_defined?('Rails')
-        Rails.application.config.allow_concurrency = true
-      end
+      Rails.application.config.allow_concurrency = true if Object.const_defined?('Rails')
 
       ActiveRecord::Base.clear_all_connections!
-      if ActiveRecord::VERSION::MAJOR >= 4
-        ActiveRecord::Base.connection_pool.connections.map(&:verify!)
-      else
-        ActiveRecord::Base.verify_active_connections!
-      end
+      ActiveRecord::Base.connection_pool.connections.map(&:verify!)
     end
   end
 end

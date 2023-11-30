@@ -51,7 +51,9 @@ class LoopLock
     raise ArgumentError, 'Not enough params for a lock' unless params[:entity_id] && params[:loop]
 
     # Remove all stale locks for this record
-    @@locks.reject! { |lock| lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] && lock[:timeout_at] < Time.now }
+    @@locks.reject! do |lock|
+      lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] && lock[:timeout_at] < Time.now
+    end
 
     return false if locked?(params)
 
@@ -83,7 +85,9 @@ class LoopLock
   def self.unlock(params)
     raise ArgumentError, 'Not enough params for a lock' unless params[:entity_id] && params[:loop]
 
-    !!@@locks.reject! { |lock| lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] }
+    !!@@locks.reject! do |lock|
+      lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id]
+    end
   end
 
   # Checks the state of an entity lock.
@@ -105,6 +109,8 @@ class LoopLock
   def self.locked?(params)
     raise ArgumentError, 'Not enough params for a lock' unless params[:entity_id] && params[:loop]
 
-    !!@@locks.index { |lock| lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id] }
+    !!@@locks.index do |lock|
+      lock[:loop] == params[:loop] && lock[:entity_id] == params[:entity_id]
+    end
   end
 end

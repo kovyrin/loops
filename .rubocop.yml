@@ -1,10 +1,8 @@
 AllCops:
   NewCops: enable
 
-LineLength:
-  Description: 'Limit lines to 100 characters.'
+Layout/LineLength:
   Max: 100
-  Enabled: false
 
 Metrics/BlockLength:
   Exclude:
@@ -12,6 +10,12 @@ Metrics/BlockLength:
 
 # TODO: Reduce this number as we refactor
 Metrics/CyclomaticComplexity:
+  Max: 20
+  Exclude:
+    - spec/**/*
+
+# TODO: Reduce this number as we refactor
+Metrics/PerceivedComplexity:
   Max: 20
   Exclude:
     - spec/**/*

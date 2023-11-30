@@ -20,7 +20,9 @@ describe Loops::Base, '.config_option method' do
     context 'when option is not present in the config' do
       it 'should raise an exception if the option is required to be present' do
         OptionTestLoop.config_option(:hello, required: true)
-        expect { create_loop(OptionTestLoop).hello }.to raise_error(Loops::Exceptions::OptionNotFound)
+        expect do
+          create_loop(OptionTestLoop).hello
+        end.to raise_error(Loops::Exceptions::OptionNotFound)
       end
 
       it 'should return default value if default value has been provided' do
@@ -64,7 +66,9 @@ describe Loops::Base, '.config_option method' do
 
       it 'should raise an exception when could not convert a value' do
         OptionTestLoop.config_option(:hello, kind_of: Integer)
-        expect { create_loop(OptionTestLoop, 'hello' => false).hello }.to raise_error(Loops::Exceptions::TypeError)
+        expect do
+          create_loop(OptionTestLoop, 'hello' => false).hello
+        end.to raise_error(Loops::Exceptions::TypeError)
       end
 
       it 'should raise an exception when kind_of-based conversion is not supported' do

@@ -67,7 +67,8 @@ module Loops
             options[:environment] = env
           end
 
-          opt.on('-f', '--framework=name', "Bootstraps Rails (rails - default value) or Merb (merb) before#{SPLIT_HELP_LINE}starting loops. Use \"none\" for plain ruby loops.") do |framework|
+          opt.on('-f', '--framework=name',
+                 "Bootstraps Rails (rails - default value) or Merb (merb) before#{SPLIT_HELP_LINE}starting loops. Use \"none\" for plain ruby loops.") do |framework|
             options[:framework] = framework
           end
 
@@ -79,11 +80,13 @@ module Loops
             options[:pid_file] = pid_file
           end
 
-          opt.on('-r', '--root=dir', 'Root directory which will be used as a loops home dir (chdir)') do |root|
+          opt.on('-r', '--root=dir',
+                 'Root directory which will be used as a loops home dir (chdir)') do |root|
             options[:root] = root
           end
 
-          opt.on('-Rlibrary', '--require=library', 'require the library before executing the script') do |library|
+          opt.on('-Rlibrary', '--require=library',
+                 'require the library before executing the script') do |library|
             options[:require] << library
           end
 
@@ -189,7 +192,8 @@ module Loops
 
           # Move up the FS hierarhy
           pwd = File.expand_path(File.join(current_dir, '..'))
-          break if pwd == current_dir # if changing the directory made no difference, then we're at the top
+          # if changing the directory made no difference, then we're at the top
+          break if pwd == current_dir
 
           current_dir = pwd
         end
@@ -264,7 +268,8 @@ module Loops
           Loops.default_logger = Loops::Logger.new($stdout)
 
         else
-          raise InvalidFrameworkError, "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
+          raise InvalidFrameworkError,
+                "Invalid framework name: #{options[:framework]}. Valid values are: none, rails, merb."
         end
       end
 

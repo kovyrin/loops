@@ -83,7 +83,8 @@ module Loops
       FileUtils.mkdir_p(File.dirname(coerced_logfile)) if coerced_logfile.is_a?(String)
 
       # Create a logger implementation.
-      @implementation = LoggerImplementation.new(coerced_logfile, @number_of_files, @max_file_size, @write_to_console, @colorful_logs)
+      @implementation = LoggerImplementation.new(coerced_logfile, @number_of_files, @max_file_size,
+                                                 @write_to_console, @colorful_logs)
       @implementation.level = @level
     end
 
@@ -166,7 +167,8 @@ module Loops
         end
       end
 
-      def initialize(log_device, number_of_files = 10, max_file_size = 10 * 1024 * 1024, write_to_console = true, colorful_logs = false)
+      def initialize(log_device, number_of_files = 10, max_file_size = 10 * 1024 * 1024,
+                     write_to_console = true, colorful_logs = false)
         super(log_device, number_of_files, max_file_size)
         self.formatter    = Formatter.new(self)
         @write_to_console = write_to_console
@@ -180,7 +182,10 @@ module Loops
           progname = color_errors(severity, progname)
         end
         super(severity, message, progname, &)
-        puts formatter.call(%w[D I W E F A][severity] || 'A', Time.now, progname, message) if @write_to_console && (message || progname)
+        if @write_to_console && (message || progname)
+          puts formatter.call(%w[D I W E F A][severity] || 'A', Time.now, progname,
+                              message)
+        end
       rescue StandardError
         # ignore errors in logging
       end

@@ -185,7 +185,9 @@ class MemoryStats
       end
       p.threads = p.threads.to_i if threads_known
 
-      p.private_dirty_rss = determine_private_dirty_rss(p.pid) if platform_provides_private_dirty_rss_information?
+      if platform_provides_private_dirty_rss_information?
+        p.private_dirty_rss = determine_private_dirty_rss(p.pid)
+      end
       processes << p
     end
     processes

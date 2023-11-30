@@ -17,12 +17,18 @@ module Loops
         config_value = config[name]
 
         unless config.key?(name)
-          raise Loops::Exceptions::OptionNotFound, "Could not find option '#{name}'!" if options[:required]
+          if options[:required]
+            raise Loops::Exceptions::OptionNotFound,
+                  "Could not find option '#{name}'!"
+          end
 
           config_value = options[:default] if options[:default]
         end
 
-        config_value = convert_option_value(name, config_value, options[:kind_of]) if options[:kind_of]
+        if options[:kind_of]
+          config_value = convert_option_value(name, config_value,
+                                              options[:kind_of])
+        end
 
         config_value
       end
@@ -36,7 +42,10 @@ module Loops
         end
 
         # Ok, we need to convert it, now make sure we have only one destination class
-        raise ArgumentError, "Ambiguous :kind_of value for option '#{name}': #{dest_class.inspect}" unless dest_class.is_a?(Class)
+        unless dest_class.is_a?(Class)
+          raise ArgumentError,
+                "Ambiguous :kind_of value for option '#{name}': #{dest_class.inspect}"
+        end
 
         # Let's try to do the conversion
         begin

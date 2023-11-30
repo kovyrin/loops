@@ -34,7 +34,9 @@ module Loops
 
         @client.acknowledge(msg)
         @total_served += 1
-        disconnect_client_and_exit if config['max_requests'] && @total_served >= config['max_requests'].to_i
+        if config['max_requests'] && @total_served >= config['max_requests'].to_i
+          disconnect_client_and_exit
+        end
       rescue Exception => e
         error "Exception from process message! We won't be ACKing the message."
         error "Details: #{e} at #{e.backtrace.first}"
@@ -57,7 +59,8 @@ module Loops
       config['port'] ||= config['port'].to_i.zero? ? 61_613 : config['port'].to_i
       config['host'] ||= 'localhost'
 
-      @client = Stomp::Client.open(config['user'], config['password'], config['host'], config['port'], true)
+      @client = Stomp::Client.open(config['user'], config['password'], config['host'],
+                                   config['port'], true)
       setup_signals
     end
 
