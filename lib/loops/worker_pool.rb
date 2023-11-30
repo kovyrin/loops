@@ -2,7 +2,9 @@
 
 module Loops
   class WorkerPool
-    attr_reader :name
+    attr_reader :name, :pm, :engine, :workers, :worker_block
+
+    delegate :logger, :shutdown?, to: :pm
 
     def initialize(name, pm, engine, &blk)
       @name = name
@@ -12,24 +14,16 @@ module Loops
       @workers = []
     end
 
-    def logger
-      @pm.logger
-    end
-
-    def shutdown?
-      @pm.shutdown?
-    end
-
     def start_workers(number)
       logger.info("Creating #{number} workers for #{name} loop...")
       number.times do |index|
-        @workers << Worker.new(name, @pm, @engine, index, &@worker_block)
+        workers << Worker.new(name, pm, engine, index, &worker_block)
       end
     end
 
     def check_workers
       logger.debug("Checking loop #{name} workers...")
-      @workers.each do |worker|
+      workers.each do |worker|
         next if worker.running? || worker.shutdown?
 
         logger.info("Worker #{worker.name} is not running. Restart!")
@@ -39,7 +33,7 @@ module Loops
 
     def wait_workers
       running = 0
-      @workers.each do |worker|
+      workers.each do |worker|
         next unless worker.running?
 
         running += 1
@@ -48,9 +42,9 @@ module Loops
       running
     end
 
-    def stop_workers(force)
+    def stop_workers(force:)
       logger.info("Stopping loop #{name} workers...")
-      @workers.each do |worker|
+      workers.each do |worker|
         next unless worker.running?
 
         worker.stop(force)
