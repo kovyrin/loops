@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Add our lib dir to the load path
-loops_lib_dir = File.dirname(__FILE__) + '/../lib'
+loops_lib_dir = "#{File.dirname(__FILE__)}/../lib"
 $LOAD_PATH.unshift(loops_lib_dir) unless $LOAD_PATH.include?(loops_lib_dir)
 
 # Load loops
@@ -11,12 +12,10 @@ begin
   # The dup is to keep ARGV intact, so that tools like ruby-debug can respawn.
   failure = Loops::CLI.execute
   Kernel.exit(failure ? 1 : 0)
-
 rescue SystemExit => e
   Kernel.exit(e.status)
-
 rescue Exception => e
-  STDERR.puts("Unhandled exception: #{e.message} (#{e.class})")
-  STDERR.puts(e.backtrace.join("\n"))
+  warn("Unhandled exception: #{e.message} (#{e.class})")
+  warn(e.backtrace.join("\n"))
   Kernel.exit(1)
 end

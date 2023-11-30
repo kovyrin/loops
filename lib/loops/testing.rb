@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require 'active_support/concern'
-require 'active_support/core_ext/string'
-require 'active_support/core_ext/hash'
+require 'active_support/all'
 
 module Loops
-  module Testing
+  module Testing # :nodoc:
     extend ActiveSupport::Concern
 
     # Dumb worker stub

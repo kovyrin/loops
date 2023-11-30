@@ -198,13 +198,10 @@ module Loops
       end
 
       def color_errors(severity, line)
-        if severity < ::Logger::ERROR
-          line
-        elsif line && line !~ /\e/
-          "\e[31m#{line}\e[0m"
-        else
-          line
-        end
+        return line if severity < ::Logger::ERROR
+        return "\e[31m#{line}\e[0m" if line && line !~ /\e/
+
+        line
       end
     end
   end

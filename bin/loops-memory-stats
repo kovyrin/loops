@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 #
 # This script is based on Phusion's passenger-memory-stats
@@ -46,8 +47,8 @@ class Table
       end
     end
 
-    format_string = max_column_widths.map{ |i| "%#{-i}s" }.join("  ")
-    header = sprintf(format_string, *@column_names).rstrip << "\n"
+    format_string = max_column_widths.map { |i| "%#{-i}s" }.join('  ')
+    header = format(format_string, *@column_names).rstrip << "\n"
     if title
       free_space = header.size - title.size - 2
       if free_space <= 0
@@ -58,8 +59,8 @@ class Table
         right_bar_size = free_space - left_bar_size
       end
       result = "#{BLUE_BG}#{BOLD}#{YELLOW}\n"
-      result << "#{"-" * left_bar_size} #{title} #{"-" * right_bar_size}\n"
-      if !@rows.empty?
+      result << "#{'-' * left_bar_size} #{title} #{'-' * right_bar_size}\n"
+      unless @rows.empty?
         result << WHITE
         result << header
       end
@@ -69,9 +70,9 @@ class Table
     if @rows.empty?
       result << RESET
     else
-      result << ("-" * header.size) << "#{RESET}\n"
+      result << ('-' * header.size) << "#{RESET}\n"
       @rows.each do |row|
-        result << sprintf(format_string, *row).rstrip << "\n"
+        result << format(format_string, *row).rstrip << "\n"
       end
     end
     result
@@ -80,48 +81,41 @@ end
 
 class MemoryStats
   class Process
-    attr_accessor :pid
-    attr_accessor :ppid
-    attr_accessor :threads
-    attr_accessor :vm_size              # in KB
-    attr_accessor :rss                  # in KB
-    attr_accessor :name
-    attr_accessor :private_dirty_rss    # in KB
+    attr_accessor :pid, :ppid, :threads, :vm_size, :rss, :name, :private_dirty_rss # in KB                  # in KB    # in KB
 
     def vm_size_in_mb
-      return sprintf("%.1f MB", vm_size / 1024.0)
+      format('%.1f MB', vm_size / 1024.0)
     end
 
     def rss_in_mb
-      return sprintf("%.1f MB", rss / 1024.0)
+      format('%.1f MB', rss / 1024.0)
     end
 
     def private_dirty_rss_in_mb
       if private_dirty_rss.is_a?(Numeric)
-        return sprintf("%.1f MB", private_dirty_rss / 1024.0)
+        format('%.1f MB', private_dirty_rss / 1024.0)
       else
-        return "?"
+        '?'
       end
     end
 
     def to_a
-      return [pid, ppid, vm_size_in_mb, private_dirty_rss_in_mb, rss_in_mb, name]
+      [pid, ppid, vm_size_in_mb, private_dirty_rss_in_mb, rss_in_mb, name]
     end
   end
 
   def start
-    loops_processes = list_processes(:match =>
-      /^loops* (monitor|worker)/)
-    print_process_list("Loops processes", loops_processes, :show_ppid => true)
+    loops_processes = list_processes(match: /^loops* (monitor|worker)/)
+    print_process_list('Loops processes', loops_processes, show_ppid: true)
 
     if RUBY_PLATFORM !~ /linux/
       puts
-      puts "*** WARNING: The private dirty RSS can only be displayed " <<
-        "on Linux. You're currently using '#{RUBY_PLATFORM}'."
-    elsif ::Process.uid != 0 && loops_processes.any?{ |p| p.private_dirty_rss.nil? }
+      puts '*** WARNING: The private dirty RSS can only be displayed ' \
+           "on Linux. You're currently using '#{RUBY_PLATFORM}'."
+    elsif ::Process.uid != 0 && loops_processes.any? { |p| p.private_dirty_rss.nil? }
       puts
-      puts "*** WARNING: Please run this tool as root. Otherwise the " <<
-        "private dirty RSS of processes cannot be determined."
+      puts '*** WARNING: Please run this tool as root. Otherwise the ' \
+           'private dirty RSS of processes cannot be determined.'
     end
   end
 
@@ -137,24 +131,24 @@ class MemoryStats
   #  list_processes(:match => 'Passenger FrameworkSpawner')
   def list_processes(options)
     if options[:exe]
-      name = options[:exe].sub(/.*\/(.*)/, '\1')
+      name = options[:exe].sub(%r{.*/(.*)}, '\1')
       if RUBY_PLATFORM =~ /linux/
         ps = "ps -C '#{name}'"
       else
-        ps = "ps -A"
+        ps = 'ps -A'
         options[:match] = Regexp.new(Regexp.escape(name))
       end
     elsif options[:name]
       if RUBY_PLATFORM =~ /linux/
         ps = "ps -C '#{options[:name]}'"
       else
-        ps = "ps -A"
+        ps = 'ps -A'
         options[:match] = Regexp.new(" #{Regexp.escape(options[:name])}")
       end
     elsif options[:match]
-      ps = "ps -A"
+      ps = 'ps -A'
     else
-      raise ArgumentError, "Invalid options."
+      raise ArgumentError, 'Invalid options.'
     end
 
     processes = []
@@ -179,29 +173,28 @@ class MemoryStats
         p.pid, p.ppid, p.threads, p.vm_size, p.rss, p.name = line.split(/ +/, 6)
       else
         p.pid, p.ppid, p.vm_size, p.rss, p.name = line.split(/ +/, 5)
-        p.threads = "?"
+        p.threads = '?'
       end
       p.name.sub!(/\Aruby: /, '')
       p.name.sub!(/ \(ruby\)\Z/, '')
-      if p.name !~ /^ps/ && (!options[:match] || p.name.match(options[:match]))
-        # Convert some values to integer.
-        [:pid, :ppid, :vm_size, :rss].each do |attr|
-          p.send("#{attr}=", p.send(attr).to_i)
-        end
-        p.threads = p.threads.to_i if threads_known
+      next unless p.name !~ /^ps/ && (!options[:match] || p.name.match(options[:match]))
 
-        if platform_provides_private_dirty_rss_information?
-          p.private_dirty_rss = determine_private_dirty_rss(p.pid)
-        end
-        processes << p
+      # Convert some values to integer.
+      %i[pid ppid vm_size rss].each do |attr|
+        p.send("#{attr}=", p.send(attr).to_i)
       end
+      p.threads = p.threads.to_i if threads_known
+
+      p.private_dirty_rss = determine_private_dirty_rss(p.pid) if platform_provides_private_dirty_rss_information?
+      processes << p
     end
-    return processes
+    processes
   end
 
-private
+  private
+
   def platform_provides_private_dirty_rss_information?
-    return RUBY_PLATFORM =~ /linux/
+    RUBY_PLATFORM =~ /linux/
   end
 
   # Returns the private dirty RSS for the given process, in KB.
@@ -209,25 +202,21 @@ private
     total = 0
     File.read("/proc/#{pid}/smaps").split("\n").each do |line|
       line =~ /^(Private)_Dirty: +(\d+)/
-      if $2
-        total += $2.to_i
-      end
+      total += ::Regexp.last_match(2).to_i if ::Regexp.last_match(2)
     end
-    if total == 0
-      return nil
+    if total.zero?
+      nil
     else
-      return total
+      total
     end
   rescue Errno::EACCES, Errno::ENOENT
-    return nil
+    nil
   end
 
   def print_process_list(title, processes, options = {})
-    table = Table.new(%w{PID PPID VMSize Private Resident Name})
+    table = Table.new(%w[PID PPID VMSize Private Resident Name])
     table.add_rows(processes)
-    if options.has_key?(:show_ppid) && !options[:show_ppid]
-      table.remove_column('PPID')
-    end
+    table.remove_column('PPID') if options.key?(:show_ppid) && !options[:show_ppid]
     if platform_provides_private_dirty_rss_information?
       table.remove_column('Resident')
     else
@@ -235,23 +224,23 @@ private
     end
     puts table.to_s(title)
 
-    if platform_provides_private_dirty_rss_information?
-      total_private_dirty_rss = 0
-      some_private_dirty_rss_cannot_be_determined = false
-      processes.each do |p|
-        if p.private_dirty_rss.is_a?(Numeric)
-          total_private_dirty_rss += p.private_dirty_rss
-        else
-          some_private_dirty_rss_cannot_be_determined = true
-        end
-      end
-      puts   "### Processes: #{processes.size}"
-      printf "### Total private dirty RSS: %.2f MB", total_private_dirty_rss / 1024.0
-      if some_private_dirty_rss_cannot_be_determined
-        puts " (?)"
+    return unless platform_provides_private_dirty_rss_information?
+
+    total_private_dirty_rss = 0
+    some_private_dirty_rss_cannot_be_determined = false
+    processes.each do |p|
+      if p.private_dirty_rss.is_a?(Numeric)
+        total_private_dirty_rss += p.private_dirty_rss
       else
-        puts
+        some_private_dirty_rss_cannot_be_determined = true
       end
+    end
+    puts   "### Processes: #{processes.size}"
+    printf '### Total private dirty RSS: %.2f MB', total_private_dirty_rss / 1024.0
+    if some_private_dirty_rss_cannot_be_determined
+      puts ' (?)'
+    else
+      puts
     end
   end
 end
